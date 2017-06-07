@@ -186,8 +186,9 @@ function makeTracks() {
 	let words = searcher.getFormattedQuery() ;
 	let va = graph.data() ;
 	var tracks = new AumeMix() ;
-	tracks = tracks.generateMix(words, 60, va[0], va[1], ) ;
-	populateTracks(tracks) ;
+	let mix = tracks.generateMix(words, 60, va[0], va[1], ) ;
+	console.log(tracks.getSegmentsFromTracks(mix)) ;
+	populateTracks(mix) ;
 	
 	function populateTracks(tracks) {
 		

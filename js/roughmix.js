@@ -2,15 +2,20 @@
 "use strict";
 
 function AumeMix(){
-	// a blank segment for silence
-	//let blankSegment = this.newSegment(['bftype', 'filename', 10, 1, 1, 1])
+    // a blank segment for silence
+    //let blankSegment = this.newSegment(['bftype', 'filename', 10, 1, 1, 1])
 
 
-	//let tracks = this.getRenderMix();
-	
+    //let tracks = this.getRenderMix();
+    
 }
 
 
+// AumeMix.prototype.convertVA 
+// helper function to map from [time value]
+// to control points with time 0-1
+// @param: Array of [[time, value], [time, value], [time, value]]
+// @ returns array of ControlPoints
 AumeMix.prototype.convertVA = function(data, duration) {
 
     let value = data.map(function(obj){
@@ -20,13 +25,34 @@ AumeMix.prototype.convertVA = function(data, duration) {
 
 }
 
+
+// AumeMix.prototype.getSegmentsFromTracks
+// Helper function for file segment loading to generate a 
+// dictionary of unique filename and segements 
+// @param: the list of tracks returned from AumeMix.prototype.generateMix
+// @returns: {"filename":{'segments':{'id':Segment, 'id':Segment}}}...
+AumeMix.prototype.getSegmentsFromTracks = function(tracks) {
+    let results = {}
+    tracks.forEach(function(track){
+        track.clips.forEach(function(clip){
+            let key = clip.segment.filename ;
+            let ckey = clip.segment.id ;
+            if(!results.hasOwnProperty(key)) results[key] = {} ;
+            if (!results[key].hasOwnProperty(ckey)) results[key][ckey] = clip.segment ;
+        })
+    })
+    return results ;
+}
+
+
+
 /*
-	AumeMix.prototype.getRenderMix
-	Args: 
-	words - Dictionary of [{'word':word, 'files':[43,23,876]}]
-	duration - Integer duration in seconds
-	valenceEnv - Array of Control Points {'time':0, 'val':1.0}
-	arousalEnv - Array of Control Points {'time':0, 'val':1.0}
+    AumeMix.prototype.getRenderMix
+    Args: 
+    words - Dictionary of [{'word':word, 'files':[43,23,876]}]
+    duration - Integer duration in seconds
+    valenceEnv - Array of Control Points {'time':0, 'val':1.0}
+    arousalEnv - Array of Control Points {'time':0, 'val':1.0}
 */
 
         
@@ -37,21 +63,21 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
     let arousal = this.convertVA(arousalEnv, duration);
     console.log(valence, arousal)
 /*
-	Request 1: Get the Track Mix Tracks
-	words - Dictionary of [{'word':word, 'files':[43,23,876]}, ]
-	duration - Integer duration in seconds
-	valenceEnv - Array of Control Points {'time':0, 'val':1.0}
-	arousalEnv - Array of Control Points {'time':0, 'val':1.0}
+    Request 1: Get the Track Mix Tracks
+    words - Dictionary of [{'word':word, 'files':[43,23,876]}, ]
+    duration - Integer duration in seconds
+    valenceEnv - Array of Control Points {'time':0, 'val':1.0}
+    arousalEnv - Array of Control Points {'time':0, 'val':1.0}
 
-	Returns:
-	Variable    Type    Value
-	words       string  The words used
-	duration    int     The duration in seconds
-	tracks      array   An array of Tracks
+    Returns:
+    Variable    Type    Value
+    words       string  The words used
+    duration    int     The duration in seconds
+    tracks      array   An array of Tracks
 
 
-	// VA envelopes 
-	# random testing
+    // VA envelopes 
+    # random testing
 */
 
     // var valenceEnv = [this.newControlPoint(0, random()), this.newControlPoint(duration, random())]+\
@@ -73,30 +99,30 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
     let tracks = []
     words.forEach(function(obj){
 
-    	let selectlist = "SELECT bfclass, filename, start, duration, valance, arousal, rowid "
-    	let tablelist = "FROM segmentlist JOIN filelist ON segmentlist.fileid=filelist.fileid "
-    	let clauselist = "";
-    	obj['files'].forEach(function(fileid){
-    		if(clauselist.length==0) {clauselist+="WHERE "}
-    			else{clauselist+=" OR "}
-    			clauselist += "segmentlist.fileid="+fileid ;
-    			
-    	});
-    	let query = selectlist+tablelist+clauselist ;
+        let selectlist = "SELECT bfclass, filename, start, duration, valance, arousal, rowid "
+        let tablelist = "FROM segmentlist JOIN filelist ON segmentlist.fileid=filelist.fileid "
+        let clauselist = "";
+        obj['files'].forEach(function(fileid){
+            if(clauselist.length==0) {clauselist+="WHERE "}
+                else{clauselist+=" OR "}
+                clauselist += "segmentlist.fileid="+fileid ;
+                
+        });
+        let query = selectlist+tablelist+clauselist ;
 
-    	let segs = db.exec(query);
-    	let bsegs = segs[0]['values'].filter(function(obj){
-    		if(obj[0] === 'back') return true;
-    		else return false ;
-    	}) ;
-    	let fsegs = segs[0]['values'].filter(function(obj){
-    		if(obj[0] === 'fore') return true;
-    		else return false ;
-    	}) ;
+        let segs = db.exec(query);
+        let bsegs = segs[0]['values'].filter(function(obj){
+            if(obj[0] === 'back') return true;
+            else return false ;
+        }) ;
+        let fsegs = segs[0]['values'].filter(function(obj){
+            if(obj[0] === 'fore') return true;
+            else return false ;
+        }) ;
 
 
-    	if(bsegs.length)tracks.push(this.newTrack(obj['word'], 'back', bsegs));
-    	if(fsegs.length)tracks.push(this.newTrack(obj['word'], 'fore', fsegs));
+        if(bsegs.length)tracks.push(this.newTrack(obj['word'], 'back', bsegs));
+        if(fsegs.length)tracks.push(this.newTrack(obj['word'], 'fore', fsegs));
     }.bind(this)) ;
 
     // rip through the mix laying down tracks
@@ -106,12 +132,12 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
         
         // get all the track numbers that need a segment at that point
         let needsSegment = tracks.filter(function(track){
-        	if(track.clips.length<=0)
-	            return true            
-	        let clip = track.clips.slice(-1)[0]
-	        if (clip.offset+clip.segment.dur <= timeKeeper) 
-	            return true
-	        return false
+            if(track.clips.length<=0)
+                return true            
+            let clip = track.clips.slice(-1)[0]
+            if (clip.offset+clip.segment.dur <= timeKeeper) 
+                return true
+            return false
         }) ;
 
         //console.log('needs seg: ' + needsSegment)
@@ -133,17 +159,17 @@ AumeMix.prototype.decisionPoint = function(tracks, valence, arousal, time){
     Args: the tracks, a list of track numbers that need clips, valence and arousal at time
     */
     tracks.forEach(function(track){
-    	let bestSegment = track.possibleSegments[0];
-    	let previous = this.computeDistance(bestSegment.valence, valence, bestSegment.arousal, arousal) ;
+        let bestSegment = track.possibleSegments[0];
+        let previous = this.computeDistance(bestSegment.valence, valence, bestSegment.arousal, arousal) ;
 
-    	track.possibleSegments.forEach(function(segment){
-    		let distance = this.computeDistance(segment.valence, valence, segment.arousal, arousal) ;
-    		if (distance<previous) {
-    			bestSegment=segment;
-    		}
-    	}.bind(this)) ;
-    	let clip = this.newClip(time, bestSegment) ;
-    	track.clips.push(clip) ;
+        track.possibleSegments.forEach(function(segment){
+            let distance = this.computeDistance(segment.valence, valence, segment.arousal, arousal) ;
+            if (distance<previous) {
+                bestSegment=segment;
+            }
+        }.bind(this)) ;
+        let clip = this.newClip(time, bestSegment) ;
+        track.clips.push(clip) ;
     }.bind(this)) ;
 }
       
@@ -152,16 +178,16 @@ AumeMix.prototype.getEnvelopeValue = function(envelope, time){
     // Args: array of control points, time
     // Returns: Float value
     let lPoint = envelope.filter(function(obj){
-    	if(obj.time<=time) return true ;
-    	else return false;
+        if(obj.time<=time) return true ;
+        else return false;
     }) ;
 
     lPoint = lPoint.slice(-1)[0] ;
     
     let rPoint = envelope.filter(function(obj){
-    	if(obj.time>=time) return true ;
-    	else if(time>1.0) return true ;
-    	else return false;
+        if(obj.time>=time) return true ;
+        else if(time>1.0) return true ;
+        else return false;
     }) ;
     rPoint = rPoint[0];
 
@@ -179,9 +205,9 @@ AumeMix.prototype.getEnvelopeValue = function(envelope, time){
 AumeMix.prototype.nextDecisionPoint = function(tracks, interval){
     //Given the tracks and timed decision interval, work out which is sooner"""
     let times = tracks.map(function(track){
-    	let clip = track.clips.slice(-1)[0] ;
-    	if(!clip) return interval;//console.log(!clip)
-    	return clip.offset + clip.segment.dur ;
+        let clip = track.clips.slice(-1)[0] ;
+        if(!clip) return interval;//console.log(!clip)
+        return clip.offset + clip.segment.dur ;
     });
     times.push(interval);
     let value = Math.min.apply(null, times) ;
@@ -273,7 +299,7 @@ AumeMix.prototype.newTrack = function(word, bftype, segments){
     //Helper function to create and return a new Track
     let track = new this.Track() ;
     track.possibleSegments = segments.map(function(obj){
-    	return this.newSegment(obj) ;
+        return this.newSegment(obj) ;
     }.bind(this));
     track.concept=word
     track.bftype =bftype
