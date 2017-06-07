@@ -152,19 +152,23 @@
 <script src="./js/database.js"></script>
 <script src='js/wordCloudSearch.js'></script>
 <script src="./js/roughmix.js"></script>
-
+<script src="audioSegmentLoader.js"></script>>
 
 
 
 
 <script type="text/javascript">
 	
+var audioCtx = null ;
 var searcher = null;
+var segmentPool = {} ;
+var countDownTillLaunch = 0 ;
 var graph = null;
 var width = null ;
 initdb(initApp) ;
 
 function initApp(argument) {
+	audioCtx = new AudioContext() ;
 	searcher = new WordCloudSearch() ;
 	searcher.loadWords() ;
 
@@ -180,41 +184,49 @@ function initApp(argument) {
 }// end initApp
 
 
-
+// callback from audioSegmentLoader
+function compileSegmentLoads(data) {
+	Object.assign(segmentPool, data) ;
+	countDownTillLaunch -- ;
+	if(!countDownTillLaunch) populateTracks(mix) ;
+}
 
 function makeTracks() {
 	let words = searcher.getFormattedQuery() ;
 	let va = graph.data() ;
 	var tracks = new AumeMix() ;
 	let mix = tracks.generateMix(words, 60, va[0], va[1], ) ;
-	console.log(tracks.getSegmentsFromTracks(mix)) ;
-	populateTracks(mix) ;
+	let segmentData = tracks.getSegmentsFromTracks(mix) ;
+	countDownTillLaunch = Object.keys(segmentData).length ;
+	console.log() ;
 	
-	function populateTracks(tracks) {
-		
-		var trackGraph = new TrackDisplay({width: width});
-	    trackGraph.tracks(tracks);
-	    trackGraph.drawGraph("#trackGraph")
-	    $("#timescale").change(function () {
-	        $("#timescaleLabel").text("Length: " + this.value + "s");
-	        graph.timescale(this.value);
-	    });
-
-	    // Update label
-	    $("#timescale").on("input", function () {
-	        $("#timescaleLabel").text("Length: " + this.value + "s");
-	        graph.timescale(this.value);
-	    });
-	    $("#timescale").change();
-
-	    $( document ).tooltip({
-	        content:function(){
-	            return this.getAttribute("title");
-	        }
-	    });
-	} // end populateTracks
+	
+	
 } // end make tracks
 
+function populateTracks(tracks) {
+		
+	var trackGraph = new TrackDisplay({width: width});
+    trackGraph.tracks(tracks);
+    trackGraph.drawGraph("#trackGraph")
+    $("#timescale").change(function () {
+        $("#timescaleLabel").text("Length: " + this.value + "s");
+        graph.timescale(this.value);
+    });
+
+    // Update label
+    $("#timescale").on("input", function () {
+        $("#timescaleLabel").text("Length: " + this.value + "s");
+        graph.timescale(this.value);
+    });
+    $("#timescale").change();
+
+    $( document ).tooltip({
+        content:function(){
+            return this.getAttribute("title");
+        }
+    });
+} // end populateTracks
 
 
 </script>
