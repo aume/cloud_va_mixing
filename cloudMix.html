@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
+    <link href="_css/mainStyle.css" rel="stylesheet" type="text/css">
+    <link href="_css/graph.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+
+	<style type="text/css">
+	body{
+		background-color: 'white' ;
+	}
+        text:hover { 
+            opacity: 1 ; 
+            font-family: times;
+            fill:'black';
+            height: 50%;
+            font-size: 40px;
+            transition: font 0.3s ease;
+        }
+        
+
+        #words_container{
+            float: left;
+            width: 100%;
+            border: solid;
+        }
+        #cloud {
+        	float: left;
+            width: 30%;
+            border-bottom: solid;
+        }
+        #stuff{
+            float: right;
+            width: 50%;
+        }
+        #stuff li {
+            display: block;
+            width: 25%;
+            float: left;
+            font-family: sans-serif;
+        }
+        #stuff li:hover {
+            color: pink ;
+        }
+        #category{
+            float: left;
+            width: 20%;
+            border-bottom: dashed;
+            border-right: dashed;
+        }
+        #query {
+            float: left;
+            width: 100%;
+            border-bottom: solid;
+        }
+        
+
+         /* Style the buttons that are used to open and close the accordion panel */
+		button.accordion {
+		    background-color: #eee;
+		    color: #444;
+		    cursor: pointer;
+		    padding: 18px;
+		    width: 100%;
+		    text-align: left;
+		    border: none;
+		    outline: none;
+		    transition: 0.4s;
+		}
+
+		/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+		button.accordion.active, button.accordion:hover {
+		    background-color: #ddd;
+		}
+
+		/* Style the accordion panel. Note: hidden by default */
+		div.panel {
+		    padding: 0 18px;
+		    background-color: white;
+		    display: none;
+		} 
+
+
+    </style>
+
+</head>
+<body>
+<!--Cloud Contatiner-->
+<button class="accordion">Search Terms</button>
+<div class="panel">
+	<input type="button" name="Click It!" onclick="makeTracks()">
+
+	
+	<div id="words_container">
+	    <div id="query"></div>
+	    <div id="category"></div>
+	    <div id="stuff"></div>
+	    <div id="cloud"></div>
+	</div>
+</div>
+
+
+<!--Mixer Container-->
+<button class="accordion">VA Mixer</button>
+<div class="panel">
+	<input type="button" name="" value="Click It!" onclick="makeTracks()">
+
+	<div class="container">
+
+	    <div id="controls">
+	        <img src="img/information-icon.png" title="hint text" class="topRight" />
+	        <input type="text" id="concept" class="half" placeholder="Enter the concept" title="placeholder hint text">
+
+	        <span class="half">Duration: <input type="range" id="timescale" value="60" min="20" max="120"/> <label
+	                for="timescale" id="timescaleLabel">Current value: </label></span>
+	    </div>
+
+	    <div class="graphContainer" class="clearfix">
+	        <img src="img/information-icon.png" title="Click anywhere on the graph to add a point to the currently selected line. Click on any point and press
+	            Delete to remove it (Except first and last points)" class="topRight" />
+	        <div id="graph"></div>
+	    </div>
+
+	    <div class="graphContainer">
+	        <img src="img/information-icon.png" title="hint text" class="topRight" />
+	        <div id="trackGraph"></div>
+	    </div>
+
+
+	</div>  <!-- end .container -->
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script
+        src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"
+        integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="
+        crossorigin="anonymous"></script>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="js/d3.layout.cloud.js"></script>
+
+<script src="js/draggraph.js"></script>
+<script src="js/trackdisplay.js"></script>
+
+<script src="./js/sql.js"></script>
+<script src="./js/database.js"></script>
+<script src='js/wordCloudSearch.js'></script>
+<script src="./js/roughmix.js"></script>
+
+
+
+
+
+<script type="text/javascript">
+	
+var searcher = null;
+var graph = null;
+var width = null ;
+initdb(initApp) ;
+
+function initApp(argument) {
+	searcher = new WordCloudSearch() ;
+	searcher.loadWords() ;
+
+	var width = $("#graph").width();
+    var valance = [[0, 0], [30, .5], [60, 0]];
+    var arousal = [[0, 1], [30, 0.4], [60, 1]];
+    graph = new DragLineGraph({
+        width: width,
+        height: width / 4
+    }).data([valance, arousal]).legend(["Valance", "Arousal"]);
+    graph("#graph");
+
+}// end initApp
+
+
+
+
+function makeTracks() {
+	let words = searcher.getFormattedQuery() ;
+	let va = graph.data() ;
+	var tracks = new AumeMix() ;
+	tracks = tracks.generateMix(words, 60, va[0], va[1], ) ;
+	populateTracks(tracks) ;
+	
+	function populateTracks(tracks) {
+		
+		var trackGraph = new TrackDisplay({width: width});
+	    trackGraph.tracks(tracks);
+	    trackGraph.drawGraph("#trackGraph")
+	    $("#timescale").change(function () {
+	        $("#timescaleLabel").text("Length: " + this.value + "s");
+	        graph.timescale(this.value);
+	    });
+
+	    // Update label
+	    $("#timescale").on("input", function () {
+	        $("#timescaleLabel").text("Length: " + this.value + "s");
+	        graph.timescale(this.value);
+	    });
+	    $("#timescale").change();
+
+	    $( document ).tooltip({
+	        content:function(){
+	            return this.getAttribute("title");
+	        }
+	    });
+	} // end populateTracks
+} // end make tracks
+
+
+
+</script>
+
+<script type="text/javascript">
+//https://www.w3schools.com/howto/howto_js_accordion.asp
+	var acc = document.getElementsByClassName("accordion");
+	var i;
+
+	for (i = 0; i < acc.length; i++) {
+	    acc[i].onclick = function(){
+	        /* Toggle between adding and removing the "active" class,
+	        to highlight the button that controls the panel */
+	        this.classList.toggle("active");
+
+	        /* Toggle between hiding and showing the active panel */
+	        var panel = this.nextElementSibling;
+	        if (panel.style.display === "block") {
+	            panel.style.display = "none";
+	        } else {
+	            panel.style.display = "block";
+	        }
+	    }
+	} 
+</script>
+
+
+</body>
+</html>

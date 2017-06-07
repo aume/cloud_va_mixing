@@ -1,0 +1,141 @@
+/* Controls */
+.container {
+    padding-top: 3em;
+}
+
+label {
+    display: inline-block;
+    width: 5em;
+}
+
+.graphContainer, #controls {
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    text-align: center;
+    border: 1px solid black;
+    box-shadow: black 2px;
+    margin-bottom: 1em;
+    padding: 1em;
+    position: relative;
+}
+
+.topRight {
+    display: block;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    border: 1px;
+
+}
+
+.half {
+    width: 50%;
+}
+
+.right {
+    text-align: right;
+}
+
+.left {
+    text-align: left;
+}
+
+/* Drag Graph */
+
+rect {
+    fill: none;
+    pointer-events: all;
+}
+
+.line, .line0 {
+    fill: none;
+    stroke-width: 1.5px;
+    stroke: steelblue;
+}
+
+#line0, .line0 {
+    stroke: steelblue;
+}
+
+#line1, .line1 {
+    stroke: red;
+}
+
+circle {
+    fill: #fff !important;
+    fill-opacity: .2;
+    cursor: move;
+}
+
+circle.selected {
+    fill: #ff7f0e;
+    stroke: #ff7f0e;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+}
+
+.tick text {
+    font-size: 12px;
+}
+
+.tick line {
+    opacity: 0.2;
+}
+
+.legend {
+    font: 10px sans-serif;
+    stroke-width: 0px;
+    cursor: pointer;
+}
+
+.legend .line0 {
+    fill: steelblue;
+    stroke-width: 0px;
+}
+
+.legend .line1 {
+    fill: red;
+    stroke-width: 0px;
+}
+
+.indicator.selected{
+    stroke-width: 1px;
+    stroke: #000;
+}
+
+.border {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+/* Track Display */
+
+.foreground, .background {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.foreground {
+    fill: #CCCCCC;
+}
+
+.background {
+    fill: #aaaaaa;
+}
+
+.clip {
+    fill: #ff6e7f;
+    stroke: #FF0000;
+    stroke-width: 1;
+}
+
+.track-label {
+    dominant-baseline: central;
+    text-anchor: middle;
+    font-size: 10px;
+}
