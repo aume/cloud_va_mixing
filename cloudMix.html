@@ -153,13 +153,13 @@
 <script src='js/wordCloudSearch.js'></script>
 <script src="./js/roughmix.js"></script>
 <script src="./js/audioSegmentLoader.js"></script>>
-<script src="./js/web-audio-scheduler.js"></script>
 
 
 
 <script type="text/javascript">
 	
-var audioCtx = null ; // the main audio context
+var audioCtx = new AudioContext() ; // the main audio context
+
 var searcher = null ; //
 var segmentPool = {} ;
 var tracks = null ;
@@ -172,7 +172,7 @@ initdb(initApp) ;
 // initApp -> (click) makeTracks -> (compileSegments) populateTracks -> (click) playSong 
 
 function initApp(argument) {
-	audioCtx = new AudioContext() ;
+	
 	searcher = new WordCloudSearch() ;
 	searcher.loadWords() ;
 	var width = $("#graph").width();
@@ -186,12 +186,24 @@ function initApp(argument) {
 }// end initApp
 
 
+//
+//
+// Play and analyze
+//
+//
+
+
+//
+//
+// Search and Load section
+//
+//
 // callback from audioSegmentLoader - loadsplit()
 function compileSegmentLoads(data) {
 	Object.assign(segmentPool, data) ;
 	countDownTillLaunch -- ;
-	console.log('segmentPool', segmentPool) ;
-	if(!countDownTillLaunch) console.log('done');//populateTracks(mix) ;
+	
+	if(!countDownTillLaunch) console.log('DONE', 'segmentPool', segmentPool, 'tracks', tracks, 'VA', graph.data()) ;//populateTracks(mix) ;
 }
 
 function makeTracks() {

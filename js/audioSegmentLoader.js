@@ -17,16 +17,17 @@ function loadsplit(url, data, callback) {
 	console.log('url', url, 'data', data)
 	//console.log('url', url, 'data', data) ;
 
-	// request.onreadystatechange = function(){
- //    //alert(request.readyState + " " + request.status);
- //    if (request.readyState ==4 && request.status == 200)
- //          console.log(request.responseText);
- //    };
+	request.onreadystatechange = function(){
+    //alert(request.readyState + " " + request.status);
+    if (request.readyState ==4 && request.status == 200)
+          console.log('loading');
+    };
 
 	request.onload = function() {
 		var audioData = request.response;
 		console.log('audioData', audioData)
-		audioCtx.decodeAudioData(audioData, function(buffer) {
+		audioCtx.decodeAudioData(audioData).then(function(buffer) {
+            console.log('decoding');
 			for(let id in data) {
 				let start = data[id].start ;
 				let dur = data[id].dur ;
@@ -34,8 +35,11 @@ function loadsplit(url, data, callback) {
                     data[id].audiobuffer = buf ;
 	            }) // end slicer  
 			}
+
 			callback(data) ; // all done
-		}) // end decode
+		}).catch(function(err) {
+          console.log('decodeAudioData failed: ' + err );
+        }); // end decode
 	} // end onload
   	request.send();
 }

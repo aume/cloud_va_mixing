@@ -69,7 +69,7 @@ function TrackDisplay(config) {
         var track, g, y = 0;
         // process each concept. Make a foreground and background
         concepts.forEach(function(track) {
-            console.log(concept)
+            //console.log(concept)
             // loop through tracks
             //for (var i = 0; i < concepts[concept].length; i++) {
                 //track = concepts[concept][i];
