@@ -30,15 +30,18 @@ AumeMix.prototype.convertVA = function(data, duration) {
 // Helper function for file segment loading to generate a 
 // dictionary of unique filename and segements 
 // @param: the list of tracks returned from AumeMix.prototype.generateMix
-// @returns: {"filename":{'segments':{'id':Segment, 'id':Segment}}}...
+// @returns: {"filename":{'url':url, 'data':{'id':Segment, 'id':Segment}}}...
 AumeMix.prototype.getSegmentsFromTracks = function(tracks) {
     let results = {}
     tracks.forEach(function(track){
         track.clips.forEach(function(clip){
             let key = clip.segment.filename ;
             let ckey = clip.segment.id ;
-            if(!results.hasOwnProperty(key)) results[key] = {} ;
-            if (!results[key].hasOwnProperty(ckey)) results[key][ckey] = clip.segment ;
+            if(!results.hasOwnProperty(key)) 
+            {
+                results[key] = {'url':clip.segment.url, 'data':{}} ;
+            }
+            if (!results[key]['data'].hasOwnProperty(ckey)) results[key]['data'][ckey] = clip.segment ;
         })
     })
     return results ;
@@ -61,7 +64,7 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
     let valence = this.convertVA(valenceEnv, duration);
 
     let arousal = this.convertVA(arousalEnv, duration);
-    console.log(valence, arousal)
+    
 /*
     Request 1: Get the Track Mix Tracks
     words - Dictionary of [{'word':word, 'files':[43,23,876]}, ]
@@ -99,7 +102,7 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
     let tracks = []
     words.forEach(function(obj){
 
-        let selectlist = "SELECT bfclass, filename, start, duration, valance, arousal, rowid "
+        let selectlist = "SELECT bfclass, filename, start, duration, valance, arousal, rowid, url "
         let tablelist = "FROM segmentlist JOIN filelist ON segmentlist.fileid=filelist.fileid "
         let clauselist = "";
         obj['files'].forEach(function(fileid){
@@ -333,6 +336,7 @@ AumeMix.prototype.newSegment = function(seg){
     segment.valence = seg[4]
     segment.arousal = seg[5]
     segment.id = seg[6]
+    segment.url = seg[7]
     return segment
 }
 

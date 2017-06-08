@@ -182,7 +182,6 @@ function TrackDisplay(config) {
         //     concepts[concept].push(value[i]);
         // }
         calculateHeight();
-        console.log("set tracks", concepts)
 
         return my;
     };

@@ -3,35 +3,45 @@
 **
 */
 
-// @param: {"filename":{'segments':{'id':Segment, 'id':Segment}}}
-// callback is a function implemented to handle returns
+// @param: url - audio file 
+// data - {'id':Segment, 'id':Segment}}
+// callback - a function implemented to handle returns
 // @returns: // Segment is given property of audiobuffer
 
-function loadsplit(data, callback) {
+function loadsplit(url, data, callback) {
 	// body...
-	let url = Object.keys(data)[0] ;
+	
 	let request = new XMLHttpRequest();
 	request.open('GET', url, true);
 	request.responseType = 'arraybuffer';
-	request.send();
+	console.log('url', url, 'data', data)
+	//console.log('url', url, 'data', data) ;
+
+	// request.onreadystatechange = function(){
+ //    //alert(request.readyState + " " + request.status);
+ //    if (request.readyState ==4 && request.status == 200)
+ //          console.log(request.responseText);
+ //    };
 
 	request.onload = function() {
 		var audioData = request.response;
+		console.log('audioData', audioData)
 		audioCtx.decodeAudioData(audioData, function(buffer) {
-			for(let id in data[url]) {
-				let start = data[url][id].start ;
-				let dur = data[url][id].dur ;
+			for(let id in data) {
+				let start = data[id].start ;
+				let dur = data[id].dur ;
 				AudioBufferSlice(buffer, start, start+dur, function(e, buf){
-                    data[url][id].audiobuffer = buf ;
+                    data[id].audiobuffer = buf ;
 	            }) // end slicer  
 			}
-			callback(data[url]) ; // all done
+			callback(data) ; // all done
 		}) // end decode
 	} // end onload
-  
+  	request.send();
+}
 
-  // function harvested from https://www.pincer.io/npm/libraries/audiobuffer-slice
-  function AudioBufferSlice(buffer, begin, end) {
+// function harvested from https://www.pincer.io/npm/libraries/audiobuffer-slice
+  function AudioBufferSlice(buffer, begin, end, callback) {
         let audioContext = audioCtx ;
         if (!(this instanceof AudioBufferSlice)) {
             return new AudioBufferSlice(buffer, begin, end, callback);
@@ -84,5 +94,4 @@ function loadsplit(data, callback) {
         //return newArrayBuffer ;
         callback(error, newArrayBuffer);
     }
-}
 

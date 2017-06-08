@@ -152,7 +152,7 @@
 <script src="./js/database.js"></script>
 <script src='js/wordCloudSearch.js'></script>
 <script src="./js/roughmix.js"></script>
-<script src="audioSegmentLoader.js"></script>>
+<script src="./js/audioSegmentLoader.js"></script>>
 
 
 
@@ -181,6 +181,8 @@ function initApp(argument) {
     }).data([valance, arousal]).legend(["Valance", "Arousal"]);
     graph("#graph");
 
+    //makeTracks() ;
+
 }// end initApp
 
 
@@ -188,19 +190,30 @@ function initApp(argument) {
 function compileSegmentLoads(data) {
 	Object.assign(segmentPool, data) ;
 	countDownTillLaunch -- ;
-	if(!countDownTillLaunch) populateTracks(mix) ;
+	console.log('segmentPool', segmentPool) ;
+	if(!countDownTillLaunch) console.log('done');//populateTracks(mix) ;
+
 }
 
 function makeTracks() {
+	console.log('making tracks') ;
 	let words = searcher.getFormattedQuery() ;
 	let va = graph.data() ;
-	var tracks = new AumeMix() ;
-	let mix = tracks.generateMix(words, 60, va[0], va[1], ) ;
-	let segmentData = tracks.getSegmentsFromTracks(mix) ;
+	var mix = new AumeMix() ;
+	let tracks = mix.generateMix(words, 60, va[0], va[1], ) ;
+	let segmentData = mix.getSegmentsFromTracks(tracks) ;
 	countDownTillLaunch = Object.keys(segmentData).length ;
-	console.log() ;
-	
-	
+
+	console.log('tracks', tracks)
+	console.log('segmentData', segmentData)
+	console.log('countDownTillLaunch', countDownTillLaunch)
+
+	populateTracks(tracks);
+
+	// get all the samples
+	for(let key in segmentData) {
+		loadsplit(segmentData[key].url, segmentData[key].data, compileSegmentLoads) ;
+	}
 	
 } // end make tracks
 
