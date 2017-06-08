@@ -113,7 +113,7 @@
 
 	    <div id="controls">
 	        <img src="img/information-icon.png" title="hint text" class="topRight" />
-	        <input type="text" id="concept" class="half" placeholder="Enter the concept" title="placeholder hint text">
+	        <!--input type="text" id="concept" class="half" placeholder="Enter the concept" title="placeholder hint text"-->
 
 	        <span class="half">Duration: <input type="range" id="timescale" value="60" min="20" max="120"/> <label
 	                for="timescale" id="timescaleLabel">Current value: </label></span>
@@ -153,25 +153,28 @@
 <script src='js/wordCloudSearch.js'></script>
 <script src="./js/roughmix.js"></script>
 <script src="./js/audioSegmentLoader.js"></script>>
-
+<script src="./js/web-audio-scheduler.js"></script>
 
 
 
 <script type="text/javascript">
 	
-var audioCtx = null ;
-var searcher = null;
+var audioCtx = null ; // the main audio context
+var searcher = null ; //
 var segmentPool = {} ;
-var countDownTillLaunch = 0 ;
+var tracks = null ;
+var countDownTillLaunch = 0 ; // index for xhr callbacks
 var graph = null;
 var width = null ;
+
 initdb(initApp) ;
+
+// initApp -> (click) makeTracks -> (compileSegments) populateTracks -> (click) playSong 
 
 function initApp(argument) {
 	audioCtx = new AudioContext() ;
 	searcher = new WordCloudSearch() ;
 	searcher.loadWords() ;
-
 	var width = $("#graph").width();
     var valance = [[0, 0], [30, .5], [60, 0]];
     var arousal = [[0, 1], [30, 0.4], [60, 1]];
@@ -180,19 +183,15 @@ function initApp(argument) {
         height: width / 4
     }).data([valance, arousal]).legend(["Valance", "Arousal"]);
     graph("#graph");
-
-    //makeTracks() ;
-
 }// end initApp
 
 
-// callback from audioSegmentLoader
+// callback from audioSegmentLoader - loadsplit()
 function compileSegmentLoads(data) {
 	Object.assign(segmentPool, data) ;
 	countDownTillLaunch -- ;
 	console.log('segmentPool', segmentPool) ;
 	if(!countDownTillLaunch) console.log('done');//populateTracks(mix) ;
-
 }
 
 function makeTracks() {
@@ -200,7 +199,7 @@ function makeTracks() {
 	let words = searcher.getFormattedQuery() ;
 	let va = graph.data() ;
 	var mix = new AumeMix() ;
-	let tracks = mix.generateMix(words, 60, va[0], va[1], ) ;
+	tracks = mix.generateMix(words, 60, va[0], va[1], ) ;
 	let segmentData = mix.getSegmentsFromTracks(tracks) ;
 	countDownTillLaunch = Object.keys(segmentData).length ;
 
