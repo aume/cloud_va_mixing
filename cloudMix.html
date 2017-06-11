@@ -89,19 +89,6 @@
 
 </head>
 <body>
-<!--Cloud Contatiner-->
-<button class="accordion">Search Terms</button>
-<div class="panel">
-	<input type="button" name="Click It!" onclick="makeTracks()">
-
-	
-	<div id="words_container">
-	    <div id="query"></div>
-	    <div id="category"></div>
-	    <div id="stuff"></div>
-	    <div id="cloud"></div>
-	</div>
-</div>
 
 
 <!--Mixer Container-->
@@ -136,6 +123,25 @@
 
 
 
+<!--Cloud Contatiner-->
+<button class="accordion">Search Terms</button>
+<div class="panel">
+	<input type="button" value="Get Mix" onclick="makeTracks()">
+	<input type="button" value="Make Mix" onclick="getItgoing()">
+	<input type="button" value="Start Audio" onclick="controlmix.start()">
+	<input type="button" value="Stop Audio" onclick="controlmix.start()">
+
+	<div id="words_container">
+	    <div id="query"></div>
+	    <div id="category"></div>
+	    <div id="stuff"></div>
+	    <div id="cloud"></div>
+	</div>
+</div>
+
+
+
+
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 <script
         src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"
@@ -150,22 +156,47 @@
 
 <script src="./js/sql.js"></script>
 <script src="./js/database.js"></script>
-<script src='js/wordCloudSearch.js'></script>
+<script src='./js/wordCloudSearch.js'></script>
 <script src="./js/roughmix.js"></script>
 <script src="./js/audioSegmentLoader.js"></script>>
-
-
-
+<script src="./js/web-audio-scheduler.js"></script>
+<script src="./js/controlmix.js"></script>
+<script src="./js/buff2Wav.js"></script>
+<script src="./js/FileSaver.js"></script>
 <script type="text/javascript">
 	
 var audioCtx = new AudioContext() ; // the main audio context
-
+var controlmix = null;
 var searcher = null ; //
 var segmentPool = {} ;
 var tracks = null ;
 var countDownTillLaunch = 0 ; // index for xhr callbacks
 var graph = null;
 var width = null ;
+
+// var Hsource = null ;
+
+// let request = new XMLHttpRequest();
+// 	request.open('GET', 'http://www.freesound.org/data/previews/70/70324_36188-hq.mp3', true);
+// 	request.responseType = 'arraybuffer';
+// 	//console.log('url', url, 'data', data) ;
+
+
+// 	request.onload = function() {
+// 		var audioData = request.response;
+// 		console.log('audioData', audioData)
+// 		audioCtx.decodeAudioData(audioData).then(function(buffer) {
+// 			// let source = audioCtx.createBufferSource() ;
+// 			// source.connect(audioCtx.destination) ;
+// 			// source.buffer = buffer ;
+// 			Hsource = buffer ;
+// 			// source.start() ;            
+
+// 		}).catch(function(err) {
+//           console.log('decodeAudioData failed: ' + err );
+//         }); // end decode
+// 	} // end onload
+//   	request.send();
 
 initdb(initApp) ;
 
@@ -186,12 +217,6 @@ function initApp(argument) {
 }// end initApp
 
 
-//
-//
-// Play and analyze
-//
-//
-
 
 //
 //
@@ -199,11 +224,23 @@ function initApp(argument) {
 //
 //
 // callback from audioSegmentLoader - loadsplit()
+
+function getItgoing() {
+	controlmix = new ControlMix(tracks)
+}
+
+function playMix() {
+	controlmix.start() ;
+}
+
 function compileSegmentLoads(data) {
 	Object.assign(segmentPool, data) ;
 	countDownTillLaunch -- ;
 	
-	if(!countDownTillLaunch) console.log('DONE', 'segmentPool', segmentPool, 'tracks', tracks, 'VA', graph.data()) ;//populateTracks(mix) ;
+	if(!countDownTillLaunch) {
+		console.log('DONE', 'segmentPool', segmentPool, 'tracks', tracks, 'VA', graph.data()) ;//populateTracks(mix) ;
+		//getItgoing()
+	}
 }
 
 function makeTracks() {

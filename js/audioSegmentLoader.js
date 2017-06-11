@@ -31,8 +31,15 @@ function loadsplit(url, data, callback) {
 			for(let id in data) {
 				let start = data[id].start ;
 				let dur = data[id].dur ;
-				AudioBufferSlice(buffer, start, start+dur, function(e, buf){
+                console.log('data', data)
+				AudioBufferSlice(buffer, start, start+dur, function(error, buf){
+                    if(error) console.log("BOO", error) ;
                     data[id].audiobuffer = buf ;
+                    // let source = audioCtx.createBufferSource() ;
+                    // source.connect(audioCtx.destination)
+                    // source.buffer = buf ;
+                    // source.start() ;
+                    //bufferToWave(buf, 0, buf.length)
 	            }) // end slicer  
 			}
 
@@ -46,11 +53,7 @@ function loadsplit(url, data, callback) {
 
 // function harvested from https://www.pincer.io/npm/libraries/audiobuffer-slice
   function AudioBufferSlice(buffer, begin, end, callback) {
-        let audioContext = audioCtx ;
-        if (!(this instanceof AudioBufferSlice)) {
-            return new AudioBufferSlice(buffer, begin, end, callback);
-        }
-
+        let audioContext = audioCtx ;        
         var error = null;
 
         var duration = buffer.duration;
@@ -63,23 +66,26 @@ function loadsplit(url, data, callback) {
         }
 
         //  seconds
-        begin = begin;
-        end = end;
+        // begin = begin;
+        // end = end;
 
         if (begin < 0) {
             error = new RangeError('begin time must be greater than 0');
         }
 
         if (end > duration) {
-            error = new RangeError('end time must be less than or equal to ' + duration);
+            let diff = end - duration ;
+            end -= diff ;
+            begin -= diff ;
+            error = new RangeError('scaling begin and end to', end, begin +'- end time must be less than or equal to ' + duration);
         }
 
         if (typeof callback !== 'function') {
             error = new TypeError('callback must be a function');
         }
 
-        var startOffset = rate * begin;
-        var endOffset = rate * end;
+        var startOffset = Math.ceil(rate * begin);
+        var endOffset = Math.floor(rate * end);
         var frameCount = endOffset - startOffset;
         var newArrayBuffer;
 
@@ -87,6 +93,11 @@ function loadsplit(url, data, callback) {
             newArrayBuffer = audioContext.createBuffer(channels, endOffset - startOffset, rate);
             var anotherArray = new Float32Array(frameCount);
             var offset = 0;
+            // TODO: Fix sample/buffer length mismatch index error
+            console.log("buffer", buffer.length, "startOffset",  startOffset, "anotherArray", anotherArray.length) ;
+            console.log(buffer) ;
+            console.log('begin', begin, 'end', end)
+            console.log((buffer.length-startOffset)-anotherArray.length) ;
 
             for (var channel = 0; channel < channels; channel++) {
               buffer.copyFromChannel(anotherArray, channel, startOffset);

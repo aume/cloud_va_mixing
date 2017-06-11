@@ -150,12 +150,12 @@ WordCloudSearch.prototype.makeTaxCloud = function (words) {
 
 // call back from list word selection
 WordCloudSearch.prototype.registerSelection = function(e) {
-      console.log('word', e);
-      console.log('selectedCategory', this.selectedCategory) ;
-      console.log('categoryWords', this.categoryWords);
+      // console.log('word', e);
+      // console.log('selectedCategory', this.selectedCategory) ;
+      // console.log('categoryWords', this.categoryWords);
 
     var fileids = this.getFileIDs(this.selectedCategory.wordid, this.categoryWords[e])
-    console.log('fileids', fileids)
+    // console.log('fileids', fileids)
 
     if(this.selectedCategory.text in this.query) {
 
@@ -183,7 +183,7 @@ WordCloudSearch.prototype.registerSelection = function(e) {
             }]
         } ;
     }
-    console.log('query', this.query) ;
+    // console.log('query', this.query) ;
     var show = "" ;
     for(let key in this.query) {
         this.query[key]['words'].forEach(function(obj){
@@ -201,7 +201,7 @@ WordCloudSearch.prototype.registerSelection = function(e) {
 
 // get the file ids for category/word combo
 WordCloudSearch.prototype.getFileIDs = function(cat, wordid) {
-  console.log(cat, wordid)
+  // console.log(cat, wordid)
     var tquery = 
         'SELECT filewords.fileid \
         FROM filewords\
