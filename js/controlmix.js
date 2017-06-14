@@ -8,28 +8,55 @@
 */
 
 // @param - tracks, semgment pool, va envelopes
+
+
+function FIFO(array, samples) {
+    array = array.subarray(0, array.length-samples.length) ;
+    array.unshift(samples) ;
+}
+
 function ControlMix(tracks) {
 
     this.audioTracks = tracks; 
 
+  
+
+    // we want to check the valence and arousal of the mix from time to time
+    this.mixValence = 0 ;
+    this.mixArousal = 0 ;
+    this.extractor = new Extractor(1024) ; // extractor used in script processor to predict VA
+    this.mixBuffer = new Float32Array(44100*2) ; // 2 second fifo buffer for VA prediction
+    this.checkVA() ; // timed function
+    // update with FIFO(this.mixBuffer, samples)
+
     this.merger = audioCtx.createChannelMerger(this.audioTracks.length) ; // assume stereo for each track
-    this.analyser = audioCtx.createAnalyser() ;
     this.processor = audioCtx.createScriptProcessor(1024, 1, 1) ;
 
-    this.processor.onaudioprocess = function() {
+    this.merger.connect(this.processor) ;
+    this.merger.connect(audioCtx.destination) ;
+
+    //
+    // audio processor function
+    //
+    this.processor.onaudioprocess = function(audioProcessingEvent) {
+        var inputBuffer = audioProcessingEvent.inputBuffer;
+        var samples = inputBuffer.getChannelData(0);
         // get the average, bincount is fftsize / 2
-        let array =  new Uint8Array(this.analyser.frequencyBinCount);
-        this.analyser.getByteFrequencyData(array);
+        FIFO(this.mixBuffer, samples)
+        // let array =  new Uint8Array(this.analyser.frequencyBinCount);
+        // this.analyser.getByteFrequencyData(array);
         //let average = getAverageVolume(array)
     }.bind(this)
 
+    //
+    //
     // add a web audio track to each track
     let channelCount = 0 ;
     this.audioTracks.forEach(function(track){
       track.audioTrack = new AudioTrack() ;
       createSliders(track.audioTrack) ;
 
-      //track.audioTrack.output.connect(this.merger,0, channelCount) ;
+      track.audioTrack.output.connect(this.merger,0, channelCount) ;
       channelCount+=1 ;
     }.bind(this)) ;
 
@@ -59,13 +86,6 @@ function ControlMix(tracks) {
       });
     }
 
-
-
-    //this.merger.connect(this.analyser) ;
-    //this.analyser.connect(this.processor)
-    this.merger.connect(audioCtx.destination) ;
-
-
     // get the scheduler ready
 
     this.sched = new WebAudioScheduler({ context: audioCtx });
@@ -83,6 +103,13 @@ function ControlMix(tracks) {
 
 }
 
+ControlMix.prototype.checkVA = function(first_argument) {
+  let features = this.extractor.extractFeatures(this.mixBuffer) ;
+  this.mixValence = this.extractor.valence(features) ;
+  this.mixArousal = this.extractor.arousal(features) ;
+  console.log('mixValence', this.mixValence, 'mixArousal', this.mixArousal)
+  setTimeout(this.checkVA, 1000) ;
+};
 
 ControlMix.prototype.start = function() {
   this.sched.start(this.scheduleMix, {parent: this});  
@@ -130,30 +157,9 @@ ControlMix.prototype.scheduleClip = function(e) {
 
 
 
-// simple PD controller for AudioTrack
-function PID() {
-    
-    this.set_point = 0.0
-    this.measured = 0.0
 
-    this.Kp = 0.1
-    this.Kd = 0.01
-
-    this.derivative  = 0
-    this.previous_error = 0
-    this.dt = 1 //timer_interval
-}
-
-PID.prototype.update = function(measured) {
-    let error = this.set_point-measured
-    this.derivative = (error - this.previous_error)/this.dt
-    output = this.Kp*error + this.Kd*this.derivative
-    this.previous_error = error
-    return otuput
-}
 
 function AudioTrack() {
-
   // eq params adjusted with e.g.
   // lowshelf.gain.value = 0.6; (-40,40)
   // lowshelf.frequency.value = 300;
@@ -181,15 +187,15 @@ function AudioTrack() {
   this.lowshelf.connect(this.mid);
   this.mid.connect(this.highshelf);
   this.output = this.highshelf ;
-  this.highshelf.connect(audioCtx.destination);
+  //this.highshelf.connect(audioCtx.destination);
 
   // the eq pid controllers
-  this.lowGainPD = new PID() ;
-  this.lowFreqPD = new PID() ;
-  this.midGainPD = new PID() ;
-  this.midFreqPD = new PID() ;
-  this.highGainPD = new PID() ;
-  this.highFreqPD = new PID() ;
+  // this.lowGainPD = new PID() ;
+  // this.lowFreqPD = new PID() ;
+  // this.midGainPD = new PID() ;
+  // this.midFreqPD = new PID() ;
+  // this.highGainPD = new PID() ;
+  // this.highFreqPD = new PID() ;
 }
 
 
@@ -210,12 +216,12 @@ AudioTrack.prototype.releaseAll = function() {
 AudioTrack.prototype.update = function(value) {
   // update the eq pid controllers and 
   // set new eq values
-  this.lowshelf.gain.value = this.lowGainPD.update() ;
-  this.lowshelf.frequency.value = this.lowFreqPD.update() ;
-  this.mid.gain.value = this.midGainPD.update();
-  this.mid.frequency.value = this.midFreqPD.update() ;
-  this.highshelf.gain.value = this.highGainPD.update() ;
-  this.highshelf.frequency.value = this.highFreqPD.update() ;
+  // this.lowshelf.gain.value = this.lowGainPD.update() ;
+  // this.lowshelf.frequency.value = this.lowFreqPD.update() ;
+  // this.mid.gain.value = this.midGainPD.update();
+  // this.mid.frequency.value = this.midFreqPD.update() ;
+  // this.highshelf.gain.value = this.highGainPD.update() ;
+  // this.highshelf.frequency.value = this.highFreqPD.update() ;
 };
 
 // stop and release the node
