@@ -1,7 +1,7 @@
 // Main extrator object to hold data and implement file handling, 
 // audio decoding and feature extration
-Extractor = function(){
-    this.windowSize = 512 ;
+Extractor = function(windowSize){
+    this.windowSize = windowSize ;
     this.windowType = "hamming" ;
     this.numMFCC = 3 ;
     this.featureNames =  [
@@ -9,7 +9,6 @@ Extractor = function(){
         'spectralSlope','spectralRolloff', 'spectralFlatness', 
         'spectralSpread', 'spectralSkewness', 'spectralKurtosis',
         'perceptualSpread','perceptualSharpness'];
-    console.log(this) ;
 };
 
 

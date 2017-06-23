@@ -94,7 +94,6 @@
 <!--Mixer Container-->
 <button class="accordion">VA Mixer</button>
 <div class="panel">
-	<input type="button" name="" value="Click It!" onclick="makeTracks()">
 
 	<div class="container">
 
@@ -169,6 +168,9 @@
 
 <script type="text/javascript">
 	
+var fileLocation = "http://digitalmedia.ok.ubc.ca/Freesound/";//"file:///Volumes/pimpernel/Resources/Freesound/" ;
+//
+
 var audioCtx = new AudioContext() ; // the main audio context
 var controlmix = null;
 var searcher = null ; //
@@ -264,7 +266,9 @@ function makeTracks() {
 
 	// get all the samples
 	for(let key in segmentData) {
-		loadsplit(segmentData[key].url, segmentData[key].data, compileSegmentLoads) ;
+		let urlLocation = fileLocation+Object.keys(segmentData)[0] ;
+		// segmentData[key].url
+		loadsplit(urlLocation, segmentData[key].data, compileSegmentLoads) ;
 	}
 	
 } // end make tracks

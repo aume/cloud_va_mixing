@@ -11,8 +11,20 @@
 
 
 function FIFO(array, samples) {
-    array = array.subarray(0, array.length-samples.length) ;
-    array.unshift(samples) ;
+    if(samples.length>array.length) return;
+    let t = array.subarray(0, array.length-samples.length) ;
+    array.set(t, samples.length) ;
+    array.set(samples) ;
+}
+
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
 }
 
 function ControlMix(tracks) {
@@ -24,7 +36,7 @@ function ControlMix(tracks) {
     // we want to check the valence and arousal of the mix from time to time
     this.mixValence = 0 ;
     this.mixArousal = 0 ;
-    this.extractor = new Extractor(1024) ; // extractor used in script processor to predict VA
+    this.extractor = new Extractor(1024) ; // extractor.js used in script processor to predict VA
     this.mixBuffer = new Float32Array(44100*2) ; // 2 second fifo buffer for VA prediction
     this.checkVA() ; // timed function
     // update with FIFO(this.mixBuffer, samples)
@@ -60,30 +72,45 @@ function ControlMix(tracks) {
       channelCount+=1 ;
     }.bind(this)) ;
 
+    //
     // generate the sliders for eqs
+    //
     function createSliders(t) {
       console.log(t)
       let pArray = [t.lowshelf.frequency, 
                     t.mid.frequency, 
                     t.highshelf.frequency] ;
       let sliderArray = [] ;
+      let mixer = document.createElement('div');
       pArray.forEach(function(obj){
-        fslider = document.createElement('input');
+        console.log(obj)
+        let sliderbox = document.createElement('div');
+        sliderbox.className = 'sliderbox' ;
+        let sliderText = document.createElement('em') ;
+        let fslider = document.createElement('input');
+        sliderText.innerHTML = guid() ;
+        
         fslider.type = 'range';
         fslider.setAttribute('orient','vertical');
-        fslider.min  = obj.minValue;
+        obj.minValue = 0 ;
+        fslider.min  = 0;//obj.minValue;
         fslider.max  = obj.maxValue;
         fslider.value = obj.value;
         fslider.step= 0.1;
         (function(obj){
           fslider.addEventListener("change", function() {
                obj.value = this.value ;
+               sliderText.innerHTML = this.value ;
                console.log(t, obj, obj.value) ;
             }, false);
         })(obj) ;
         obj.slider = fslider ;
-        document.body.appendChild(fslider); 
+        sliderbox.appendChild(fslider);
+        sliderbox.appendChild(sliderText) ;
+        mixer.appendChild(sliderbox) ;
+        
       });
+      document.body.appendChild(mixer); 
     }
 
     // get the scheduler ready
@@ -103,12 +130,14 @@ function ControlMix(tracks) {
 
 }
 
-ControlMix.prototype.checkVA = function(first_argument) {
+// do check va repededly
+ControlMix.prototype.checkVA = function() {
   let features = this.extractor.extractFeatures(this.mixBuffer) ;
   this.mixValence = this.extractor.valence(features) ;
   this.mixArousal = this.extractor.arousal(features) ;
-  console.log('mixValence', this.mixValence, 'mixArousal', this.mixArousal)
-  setTimeout(this.checkVA, 1000) ;
+  console.log('mixValence', this.mixValence, 'mixArousal', this.mixArousal, 'features', features)
+  let that = this ;
+  setTimeout(function(){that.checkVA()}, 1000) ;
 };
 
 ControlMix.prototype.start = function() {
@@ -143,7 +172,7 @@ ControlMix.prototype.scheduleClip = function(e) {
   let t0 = e.playbackTime;
   let t1 = t0 + e.args.duration;
   e.args.track.swapBuffer(e.args.buffer) ;
-  console.log("scheduleClip", e) ;
+  //console.log("scheduleClip", e) ;
 
   // let source = audioCtx.createBufferSource() ;
   // source.connect(audioCtx.destination) ;

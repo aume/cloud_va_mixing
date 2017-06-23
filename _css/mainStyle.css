@@ -73,6 +73,10 @@ hgroup {
 
 */
 
+.sliderbox{
+	float: left ;
+}
+
 .content {
 
 	padding: 10px 0;
