@@ -75,6 +75,16 @@ hgroup {
 
 .sliderbox{
 	float: left ;
+	padding: 5px;
+	margin: 2px ;
+}
+
+.sliderText{
+	display: block ;
+}
+
+.slider{
+	display: block ;
 }
 
 .content {

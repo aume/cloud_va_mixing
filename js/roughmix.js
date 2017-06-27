@@ -147,8 +147,8 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
         // calculate v,a values of curves for time
         let v = this.getEnvelopeValue(valence, timeKeeper/duration)
         let a = this.getEnvelopeValue(arousal, timeKeeper/duration)
-        // console.log('v', v)
-        // console.log('a', a)
+        console.log('v', v)
+        console.log('a', a)
         // execute decision point populating tracks with clips        
         this.decisionPoint(needsSegment, v, a, timeKeeper)
     }
@@ -156,11 +156,7 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
 }
 
 AumeMix.prototype.decisionPoint = function(tracks, valence, arousal, time){
-    /*
-    Select a segments for Tracks
-    Implements the Minimum Conflicts Algorithm
-    Args: the tracks, a list of track numbers that need clips, valence and arousal at time
-    */
+
     tracks.forEach(function(track){
         let bestSegment = track.possibleSegments[0];
         let previous = this.computeDistance(bestSegment.valence, valence, bestSegment.arousal, arousal) ;

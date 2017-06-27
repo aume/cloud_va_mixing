@@ -14,7 +14,7 @@ function FIFO(array, samples) {
     if(samples.length>array.length) return;
     let t = array.subarray(0, array.length-samples.length) ;
     array.set(t, samples.length) ;
-    array.set(samples) ;
+    array.set(samples, 0) ;
 }
 
 function guid() {
@@ -30,8 +30,6 @@ function guid() {
 function ControlMix(tracks) {
 
     this.audioTracks = tracks; 
-
-  
 
     // we want to check the valence and arousal of the mix from time to time
     this.mixValence = 0 ;
@@ -76,32 +74,36 @@ function ControlMix(tracks) {
     // generate the sliders for eqs
     //
     function createSliders(t) {
-      console.log(t)
-      let pArray = [t.lowshelf.frequency, 
-                    t.mid.frequency, 
-                    t.highshelf.frequency] ;
+      let pArray = [t.lowshelf.frequency, t.lowshelf.gain,
+                    t.mid.frequency, t.mid.gain,
+                    t.highshelf.frequency, t.highshelf.gain] ;
+
       let sliderArray = [] ;
       let mixer = document.createElement('div');
       pArray.forEach(function(obj){
         console.log(obj)
         let sliderbox = document.createElement('div');
         sliderbox.className = 'sliderbox' ;
+
         let sliderText = document.createElement('em') ;
+        sliderText.innerHTML = obj.name ;
+        sliderText.className = 'slidertext' ;
+
         let fslider = document.createElement('input');
-        sliderText.innerHTML = guid() ;
-        
+        fslider.className = 'slider' ;
+
         fslider.type = 'range';
         fslider.setAttribute('orient','vertical');
-        obj.minValue = 0 ;
-        fslider.min  = 0;//obj.minValue;
-        fslider.max  = obj.maxValue;
+        //obj.minValue = 0 ;
+        fslider.min  = obj.minValue_;
+        fslider.max  = obj.maxValue_;
         fslider.value = obj.value;
-        fslider.step= 0.1;
+        fslider.step= 0.01;
         (function(obj){
           fslider.addEventListener("change", function() {
                obj.value = this.value ;
-               sliderText.innerHTML = this.value ;
-               console.log(t, obj, obj.value) ;
+               //sliderText.innerHTML = this.value ;
+               //console.log(t, obj, obj.value) ;
             }, false);
         })(obj) ;
         obj.slider = fslider ;
@@ -135,7 +137,7 @@ ControlMix.prototype.checkVA = function() {
   let features = this.extractor.extractFeatures(this.mixBuffer) ;
   this.mixValence = this.extractor.valence(features) ;
   this.mixArousal = this.extractor.arousal(features) ;
-  console.log('mixValence', this.mixValence, 'mixArousal', this.mixArousal, 'features', features)
+  console.log('mixValence', this.mixValence, 'mixArousal', this.mixArousal)
   let that = this ;
   setTimeout(function(){that.checkVA()}, 1000) ;
 };
@@ -172,96 +174,9 @@ ControlMix.prototype.scheduleClip = function(e) {
   let t0 = e.playbackTime;
   let t1 = t0 + e.args.duration;
   e.args.track.swapBuffer(e.args.buffer) ;
-  //console.log("scheduleClip", e) ;
-
-  // let source = audioCtx.createBufferSource() ;
-  // source.connect(audioCtx.destination) ;
-  // source.buffer = e.args.buffer ;
-  // source.start() ;
-
-  //this.sched.nextTick(t1, () => {
-    // on complete do something or not
-  //});
 }
 
 
 
 
-
-function AudioTrack() {
-  // eq params adjusted with e.g.
-  // lowshelf.gain.value = 0.6; (-40,40)
-  // lowshelf.frequency.value = 300;
-  this.myInput = audioCtx.createBufferSource() ;
-  this.lowshelf = audioCtx.createBiquadFilter();
-  this.mid = audioCtx.createBiquadFilter();
-  this.highshelf = audioCtx.createBiquadFilter();
-
-  //set the filter types (you could set all to 5, for a different result, feel free to experiment)
-  this.lowshelf.type = 3;
-  this.mid.type = 5;
-  this.highshelf.type = 4;
-
-  //
-  this.lowshelf.frequency.value = 200 ;
-  this.mid.frequency.value = 2000 ;
-  this.highshelf.value = 10000 ;
-
-  // this.lowshelf.gain.value = -1000 ;
-  // this.mid.gain.value = -1000 ;
-  // this.highshelf.gain.value = 1000 ;
-
-  //connect 'em in order
-  this.myInput.connect(this.lowshelf);
-  this.lowshelf.connect(this.mid);
-  this.mid.connect(this.highshelf);
-  this.output = this.highshelf ;
-  //this.highshelf.connect(audioCtx.destination);
-
-  // the eq pid controllers
-  // this.lowGainPD = new PID() ;
-  // this.lowFreqPD = new PID() ;
-  // this.midGainPD = new PID() ;
-  // this.midFreqPD = new PID() ;
-  // this.highGainPD = new PID() ;
-  // this.highFreqPD = new PID() ;
-}
-
-
-
-// release everything
-AudioTrack.prototype.releaseAll = function() {
-  this.myInput.stop();
-  this.myInput.disconnect();
-  this.myInput = null ;
-  this.lowshelf.disconnect();
-  this.lowshelf = null ;
-  this.mid.disconnect();
-  this.mid = null ;
-  this.highshelf.disconnect();
-  this.highshelf = null ;
-};
-
-AudioTrack.prototype.update = function(value) {
-  // update the eq pid controllers and 
-  // set new eq values
-  // this.lowshelf.gain.value = this.lowGainPD.update() ;
-  // this.lowshelf.frequency.value = this.lowFreqPD.update() ;
-  // this.mid.gain.value = this.midGainPD.update();
-  // this.mid.frequency.value = this.midFreqPD.update() ;
-  // this.highshelf.gain.value = this.highGainPD.update() ;
-  // this.highshelf.frequency.value = this.highFreqPD.update() ;
-};
-
-// stop and release the node
-// then create and connect 
-AudioTrack.prototype.swapBuffer = function(buffer) {
-  //this.myInput.stop() ;
-  this.myInput.disconnect() ;
-  this.myInput = null ;
-  this.myInput = audioCtx.createBufferSource() ;
-  this.myInput.buffer = buffer;
-  this.myInput.connect(this.lowshelf) ;
-  this.myInput.start() ;
-};
 

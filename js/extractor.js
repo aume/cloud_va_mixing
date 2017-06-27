@@ -18,7 +18,7 @@ Extractor = function(windowSize){
 //
 //
 Extractor.prototype.extractFeatures = function(buffer) {
-    console.log('begin callback') ;
+    //console.log('begin callback') ;
     let source = buffer;//.getChannelData(0);   
 
     Meyda.bufferSize = this.windowSize ;

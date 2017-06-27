@@ -139,6 +139,7 @@
 </div>
 
 
+<canvas id="oscilloscope"></canvas>
 
 
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
@@ -150,21 +151,28 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="js/d3.layout.cloud.js"></script>
 
+<script src="./js/buff2Wav.js"></script>
+<script src="./js/FileSaver.js"></script>
+<script src="./js/meyda.js"></script>
+<script src="./js/math.min.js"></script>
+
 <script src="js/draggraph.js"></script>
 <script src="js/trackdisplay.js"></script>
 
 <script src="./js/sql.js"></script>
 <script src="./js/database.js"></script>
 <script src='./js/wordCloudSearch.js'></script>
+
 <script src="./js/roughmix.js"></script>
 <script src="./js/audioSegmentLoader.js"></script>>
 <script src="./js/web-audio-scheduler.js"></script>
+
+
+
 <script src="./js/controlmix.js"></script>
-<script src="./js/buff2Wav.js"></script>
-<script src="./js/FileSaver.js"></script>
-<script src="./js/meyda.js"></script>
-<script src="./js/math.min.js"></script>
+<script src="./js/audiotrack.js"></script>
 <script src="./js/extractor.js"></script>
+<script src="./js/meter.js"></script>
 
 <script type="text/javascript">
 	
@@ -172,6 +180,12 @@ var fileLocation = "http://digitalmedia.ok.ubc.ca/Freesound/";//"file:///Volumes
 //
 
 var audioCtx = new AudioContext() ; // the main audio context
+var analyser = audioCtx.createAnalyser() ;
+analyser.fftSize = 2048;
+var bufferLength = analyser.frequencyBinCount;
+var dataArray = new Uint8Array(bufferLength);
+analyser.getByteTimeDomainData(dataArray);
+
 var controlmix = null;
 var searcher = null ; //
 var segmentPool = {} ;
@@ -296,6 +310,60 @@ function populateTracks(tracks) {
         }
     });
 } // end populateTracks
+
+
+
+// Get a canvas defined with ID "oscilloscope"
+	var canvas = document.getElementById("oscilloscope");
+	var canvasCtx = canvas.getContext("2d");
+
+	// draw an oscilloscope of the current audio source
+
+	function draw() {
+
+	  drawVisual = requestAnimationFrame(draw);
+
+	  analyser.getByteTimeDomainData(dataArray);
+
+	  avg /= bufferLength ;
+	avg*=1 ;
+	canvasCtx.fillStyle = "rgb("+dataArray[100]*2+","+dataArray[10]*2+","+0+")"
+	canvasCtx.fillRect(0, 0, canvas.width, canvas.height) ;
+
+	  // canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+	  // canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+	  canvasCtx.lineWidth = 2;
+	  canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+
+	  canvasCtx.beginPath();
+
+	  var sliceWidth = canvas.width * 1.0 / bufferLength;
+	  var x = 0;
+
+	  var avg = 0 ;
+	  for (var i = 0; i < bufferLength; i++) {
+	  	avg += dataArray[i] * 2.0 ;
+	    var v = dataArray[i] / 128.0;
+	    var y = v * canvas.height / 2;
+
+	    if (i === 0) {
+	      canvasCtx.moveTo(x, y);
+	    } else {
+	      canvasCtx.lineTo(x, y);
+	    }
+
+	    x += sliceWidth;
+	  }
+
+	  canvasCtx.lineTo(canvas.width, canvas.height / 2);
+	  canvasCtx.stroke();
+
+	
+	};
+	
+
+	draw();
 
 
 </script>

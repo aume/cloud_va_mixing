@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+    <script src="dot.js"></script>>
+</head>
+<body>
+
+<canvas></canvas>
+
+
+<script type="text/javascript">
+	
+let box = document.createElement('div') ;
+box.className = "content" ;
+for (var i = 0; i < 4; i++) {
+    let slider = document.createElement('input') ;
+    slider.type = 'range' ;
+    slider.setAttribute("orient", "vertical");
+    box.appendChild(slider)
+}
+
+let dotbox = new Dot() ;
+
+document.body.appendChild(dotbox.canvas) ;
+
+
+
+</script>
+</body>
+</html>
