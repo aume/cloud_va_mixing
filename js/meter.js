@@ -5,22 +5,33 @@ function Meter(track) {
 	this.dotY = 0 ;
 
 	this.dot_canvas = document.createElement('canvas') ;
-	this.dot_canvas.setAttribute('width', 200) ;
-	this.dot_canvas.setAttribute('height', 200) ;
-	this.dot_context = this.canvas.getContext("2d");
+	this.dot_canvas.className = 'vameter' ;
+	this.dot_context = this.dot_canvas.getContext("2d");
 
 	this.osc_canvas = document.createElement('canvas') ;
 	this.osc_canvas.setAttribute('width', 300) ;
 	this.osc_canvas.setAttribute('height', 200) ;
-	this.osc_context = this.canvas.getContext("2d");
+	this.osc_context = this.osc_canvas.getContext("2d");
 
 	this.audioTrack = track ;
 	this.update() ;
 }
 
-Meter.prototype.updateDot = function(first_argument) {
+Meter.prototype.updateDot = function() {
 	let width = this.dot_canvas.width ;
 	let height = this.dot_canvas.height ;
+
+	this.dotY = map(this.audioTrack.arousal, 2, -2, 0, height) ;
+	this.dotX = map(this.audioTrack.valence, -2, 2, 0, width) ;
+
+	this.dotX = clamp(this.dotX, 0, height)
+	this.dotY = clamp(this.dotY, 0, height)
+
+	console.log("arousal", this.audioTrack.arousal, "valence", this.audioTrack.valence) ;
+
+	this.dot_context.fillStyle="white";
+	this.dot_context.fillRect(0,0,width, height);
+
 
 	this.dot_context.lineWidth = 5 ;
 	this.dot_context.strokeStyle = "#000" ;
@@ -43,10 +54,14 @@ Meter.prototype.updateDot = function(first_argument) {
 };
 
 Meter.prototype.updateOsc = function() {
-	this.track.analyser.getByteTimeDomainData(this.track.dataArray);
+	let dataArray = this.audioTrack.analyser.dataArray ;
+	this.audioTrack.analyser.getByteTimeDomainData(dataArray);
 
-	let bufferLength = this.track.bufferLength ;
+	let bufferLength = this.audioTrack.analyser.bufferLength ;
 	
+	this.osc_context.fillStyle="white";
+	this.osc_context.fillRect(0,0,this.osc_canvas.width, this.osc_canvas.height);
+
 	this.osc_context.lineWidth = 2;
 	this.osc_context.strokeStyle = 'rgb(0, 0, 0)';
 
@@ -76,7 +91,7 @@ Meter.prototype.updateOsc = function() {
 Meter.prototype.update = function() {
 
 	this.updateDot() ;
-	this.updateOsc() ;
+	//this.updateOsc() ;
 	let that = this ;
   	requestAnimationFrame(function(){that.update()}, 100) ;
 

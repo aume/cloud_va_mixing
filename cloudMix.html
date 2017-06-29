@@ -6,6 +6,7 @@
 	<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
     <link href="_css/mainStyle.css" rel="stylesheet" type="text/css">
     <link href="_css/graph.css" rel="stylesheet" type="text/css"/>
+
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 
 
@@ -15,76 +16,48 @@
 	}
         text:hover { 
             opacity: 1 ; 
-            font-family: times;
-            fill:'black';
-            height: 50%;
-            font-size: 40px;
-            transition: font 0.3s ease;
+            transition: font 0.1s ease;
         }
         
 
         #words_container{
             float: left;
+            display: block;
             width: 100%;
             border: solid;
+            background-color: white;
         }
+
         #cloud {
         	float: left;
-            width: 30%;
+        	display: inline-block;
+            width: 50%;
             border-bottom: solid;
         }
-        #stuff{
+        #words{
             float: right;
             width: 50%;
         }
-        #stuff li {
+        #words li {
             display: block;
             width: 25%;
             float: left;
             font-family: sans-serif;
         }
-        #stuff li:hover {
+        #words li:hover {
             color: pink ;
         }
+
         #category{
-            float: left;
-            width: 20%;
+            min-height: 2em;
             border-bottom: dashed;
             border-right: dashed;
         }
         #query {
-            float: left;
-            width: 100%;
+            min-height: 2em;
             border-bottom: solid;
         }
         
-
-         /* Style the buttons that are used to open and close the accordion panel */
-		button.accordion {
-		    background-color: #eee;
-		    color: #444;
-		    cursor: pointer;
-		    padding: 18px;
-		    width: 100%;
-		    text-align: left;
-		    border: none;
-		    outline: none;
-		    transition: 0.4s;
-		}
-
-		/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-		button.accordion.active, button.accordion:hover {
-		    background-color: #ddd;
-		}
-
-		/* Style the accordion panel. Note: hidden by default */
-		div.panel {
-		    padding: 0 18px;
-		    background-color: white;
-		    display: none;
-		} 
-
-
     </style>
 
 </head>
@@ -92,54 +65,53 @@
 
 
 <!--Mixer Container-->
-<button class="accordion">VA Mixer</button>
-<div class="panel">
 
+    <nav id="nav"></nav>
 	<div class="container">
+        <img src="img/AuMeLogo.png" style="display: block; width: 80%;"/>
 
 	    <div id="controls">
-	        <img src="img/information-icon.png" title="hint text" class="topRight" />
+	        <!-- <img src="img/information-icon.png" title="hint text" class="topRight" /> -->
 	        <!--input type="text" id="concept" class="half" placeholder="Enter the concept" title="placeholder hint text"-->
 
 	        <span class="half">Duration: <input type="range" id="timescale" value="60" min="20" max="120"/> <label
 	                for="timescale" id="timescaleLabel">Current value: </label></span>
 	    </div>
 
-	    <div class="graphContainer" class="clearfix">
-	        <img src="img/information-icon.png" title="Click anywhere on the graph to add a point to the currently selected line. Click on any point and press
-	            Delete to remove it (Except first and last points)" class="topRight" />
+	    <div class="graphContainer clearfix" id="lineEditorContainer">
+	        <!-- <img src="img/information-icon.png" title="Click anywhere on the graph to add a point to the currently selected line. Click on any point and press
+	            Delete to remove it (Except first and last points)" class="topRight" /> -->
 	        <div id="graph"></div>
 	    </div>
 
-	    <div class="graphContainer">
-	        <img src="img/information-icon.png" title="hint text" class="topRight" />
+	    <div>
+		    <input type="button" value="Get Mix" onclick="makeTracks()">
+			<input type="button" value="Make Mix" onclick="getItgoing()">
+			<input type="button" value="Start Audio" onclick="controlmix.start()">
+			<input type="button" value="Stop Audio" onclick="controlmix.start()">
+		</div>
+		<div id="words_container" class="clearfix">
+            <img src="img/loading.gif" style="display: block;" id="wordsLoadingSpinner"/>
+
+		    <div id="query"></div>
+		    <div id="category"></div>
+		    <div id="words"></div>
+		    <div id="cloud"></div>
+		</div>
+
+	    <div class="graphContainer" id="trackDisplayContainer" style="display:none;">
+            <img src="img/loading.gif" style="display: none;" id="tracksLoadingSpinner"/>
+
+	        <!-- <img src="img/information-icon.png" title="hint text" class="topRight" /> -->
 	        <div id="trackGraph"></div>
 	    </div>
 
 
 	</div>  <!-- end .container -->
-</div>
 
 
 
-<!--Cloud Contatiner-->
-<button class="accordion">Search Terms</button>
-<div class="panel">
-	<input type="button" value="Get Mix" onclick="makeTracks()">
-	<input type="button" value="Make Mix" onclick="getItgoing()">
-	<input type="button" value="Start Audio" onclick="controlmix.start()">
-	<input type="button" value="Stop Audio" onclick="controlmix.start()">
 
-	<div id="words_container">
-	    <div id="query"></div>
-	    <div id="category"></div>
-	    <div id="stuff"></div>
-	    <div id="cloud"></div>
-	</div>
-</div>
-
-
-<canvas id="oscilloscope"></canvas>
 
 
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
@@ -180,11 +152,7 @@ var fileLocation = "http://digitalmedia.ok.ubc.ca/Freesound/";//"file:///Volumes
 //
 
 var audioCtx = new AudioContext() ; // the main audio context
-var analyser = audioCtx.createAnalyser() ;
-analyser.fftSize = 2048;
-var bufferLength = analyser.frequencyBinCount;
-var dataArray = new Uint8Array(bufferLength);
-analyser.getByteTimeDomainData(dataArray);
+
 
 var controlmix = null;
 var searcher = null ; //
@@ -194,29 +162,6 @@ var countDownTillLaunch = 0 ; // index for xhr callbacks
 var graph = null;
 var width = null ;
 
-// var Hsource = null ;
-
-// let request = new XMLHttpRequest();
-// 	request.open('GET', 'http://www.freesound.org/data/previews/70/70324_36188-hq.mp3', true);
-// 	request.responseType = 'arraybuffer';
-// 	//console.log('url', url, 'data', data) ;
-
-
-// 	request.onload = function() {
-// 		var audioData = request.response;
-// 		console.log('audioData', audioData)
-// 		audioCtx.decodeAudioData(audioData).then(function(buffer) {
-// 			// let source = audioCtx.createBufferSource() ;
-// 			// source.connect(audioCtx.destination) ;
-// 			// source.buffer = buffer ;
-// 			Hsource = buffer ;
-// 			// source.start() ;            
-
-// 		}).catch(function(err) {
-//           console.log('decodeAudioData failed: ' + err );
-//         }); // end decode
-// 	} // end onload
-//   	request.send();
 
 initdb(initApp) ;
 
@@ -226,18 +171,45 @@ function initApp(argument) {
 	
 	searcher = new WordCloudSearch() ;
 	searcher.loadWords() ;
+    hide('wordsLoadingSpinner') ;
+
 	var width = $("#graph").width();
-    var valance = [[0, 0], [30, .5], [60, 0]];
-    var arousal = [[0, 1], [30, 0.4], [60, 1]];
+	var valence = [[0, 1], [30, 0.4], [60, 1]];
+    var arousal = [[0, 0], [30, .5], [60, 0]];
     graph = new DragLineGraph({
         width: width,
-        height: width / 4
-    }).data([valance, arousal]).legend(["Valance", "Arousal"]);
+        height: 200
+    }).data([valence, arousal]).legend(["Valance", "Arousal"]);
     graph("#graph");
+
+    $("#timescale").change(function () {
+        $("#timescaleLabel").text("Length: " + this.value + "s");
+        graph.timescale(this.value);
+    });
+
+    // Update label
+    $("#timescale").on("input", function () {
+        $("#timescaleLabel").text("Length: " + this.value + "s");
+        graph.timescale(this.value);
+    });
+    $("#timescale").change();
+
+    $( document ).tooltip({
+        content:function(){
+            return this.getAttribute("title");
+        }
+    });
 }// end initApp
 
 
-
+function hide(elementName) {
+    var x = document.getElementById(elementName);
+    if (x.style.display === 'none') {
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+    }
+} 
 //
 //
 // Search and Load section
@@ -256,7 +228,6 @@ function playMix() {
 function compileSegmentLoads(data) {
 	Object.assign(segmentPool, data) ;
 	countDownTillLaunch -- ;
-	
 	if(!countDownTillLaunch) {
 		console.log('DONE', 'segmentPool', segmentPool, 'tracks', tracks, 'VA', graph.data()) ;//populateTracks(mix) ;
 		//getItgoing()
@@ -265,10 +236,14 @@ function compileSegmentLoads(data) {
 
 function makeTracks() {
 	console.log('making tracks') ;
+	hide('words_container') ;
+    hide('tracksLoadingSpinner') ;
+	var mix = new RoughMix() ;
 	let words = searcher.getFormattedQuery() ;
 	let va = graph.data() ;
-	var mix = new AumeMix() ;
-	tracks = mix.generateMix(words, 60, va[0], va[1], ) ;
+	let duration = document.getElementById("timescale").value ;
+
+	tracks = mix.generateMix(words, parseInt(duration), va[0], va[1]) ;
 	let segmentData = mix.getSegmentsFromTracks(tracks) ;
 	countDownTillLaunch = Object.keys(segmentData).length ;
 
@@ -281,113 +256,26 @@ function makeTracks() {
 	// get all the samples
 	for(let key in segmentData) {
 		let urlLocation = fileLocation+Object.keys(segmentData)[0] ;
-		// segmentData[key].url
 		loadsplit(urlLocation, segmentData[key].data, compileSegmentLoads) ;
 	}
 	
 } // end make tracks
 
 function populateTracks(tracks) {
-		
-	var trackGraph = new TrackDisplay({width: width});
+	let duration = document.getElementById("timescale").value ;
+	var trackGraph = new TrackDisplay({width: width,timescale:duration});
     trackGraph.tracks(tracks);
     trackGraph.drawGraph("#trackGraph")
-    $("#timescale").change(function () {
-        $("#timescaleLabel").text("Length: " + this.value + "s");
-        graph.timescale(this.value);
-    });
-
-    // Update label
-    $("#timescale").on("input", function () {
-        $("#timescaleLabel").text("Length: " + this.value + "s");
-        graph.timescale(this.value);
-    });
-    $("#timescale").change();
-
-    $( document ).tooltip({
-        content:function(){
-            return this.getAttribute("title");
-        }
-    });
+    hide('tracksLoadingSpinner') ;
 } // end populateTracks
 
-
-
-// Get a canvas defined with ID "oscilloscope"
-	var canvas = document.getElementById("oscilloscope");
-	var canvasCtx = canvas.getContext("2d");
-
-	// draw an oscilloscope of the current audio source
-
-	function draw() {
-
-	  drawVisual = requestAnimationFrame(draw);
-
-	  analyser.getByteTimeDomainData(dataArray);
-
-	  avg /= bufferLength ;
-	avg*=1 ;
-	canvasCtx.fillStyle = "rgb("+dataArray[100]*2+","+dataArray[10]*2+","+0+")"
-	canvasCtx.fillRect(0, 0, canvas.width, canvas.height) ;
-
-	  // canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-	  // canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-	  canvasCtx.lineWidth = 2;
-	  canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
-
-	  canvasCtx.beginPath();
-
-	  var sliceWidth = canvas.width * 1.0 / bufferLength;
-	  var x = 0;
-
-	  var avg = 0 ;
-	  for (var i = 0; i < bufferLength; i++) {
-	  	avg += dataArray[i] * 2.0 ;
-	    var v = dataArray[i] / 128.0;
-	    var y = v * canvas.height / 2;
-
-	    if (i === 0) {
-	      canvasCtx.moveTo(x, y);
-	    } else {
-	      canvasCtx.lineTo(x, y);
-	    }
-
-	    x += sliceWidth;
-	  }
-
-	  canvasCtx.lineTo(canvas.width, canvas.height / 2);
-	  canvasCtx.stroke();
-
-	
-	};
-	
-
-	draw();
 
 
 </script>
 
 <script type="text/javascript">
 //https://www.w3schools.com/howto/howto_js_accordion.asp
-	var acc = document.getElementsByClassName("accordion");
-	var i;
 
-	for (i = 0; i < acc.length; i++) {
-	    acc[i].onclick = function(){
-	        /* Toggle between adding and removing the "active" class,
-	        to highlight the button that controls the panel */
-	        this.classList.toggle("active");
-
-	        /* Toggle between hiding and showing the active panel */
-	        var panel = this.nextElementSibling;
-	        if (panel.style.display === "block") {
-	            panel.style.display = "none";
-	        } else {
-	            panel.style.display = "block";
-	        }
-	    }
-	} 
 </script>
 
 

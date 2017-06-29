@@ -9,15 +9,15 @@ label {
 }
 
 .graphContainer, #controls {
-    width: 80%;
+    /*width: 80%;
     margin-left: 10%;
-    margin-right: 10%;
+    margin-right: 10%;*/
     text-align: center;
     border: 1px solid black;
     box-shadow: black 2px;
     margin-bottom: 1em;
-    padding: 1em;
-    position: relative;
+    padding: 0.25em;
+    /*position: relative;*/
 }
 
 .topRight {

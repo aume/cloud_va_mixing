@@ -10,6 +10,16 @@
 // @param - tracks, semgment pool, va envelopes
 
 
+function map(X, A, B, C, D) {
+  //If your number X falls between A and B, and you would like Y to fall between C and D, you can apply the following linear transform:
+  //https://stackoverflow.com/questions/345187/math-mapping-numbers
+  return (X-A)/(B-A) * (D-C) + C
+}
+
+function clamp(v, min, max) {
+    return (Math.min(max, Math.max(min, v)));
+}
+
 function FIFO(array, samples) {
     if(samples.length>array.length) return;
     let t = array.subarray(0, array.length-samples.length) ;
@@ -30,45 +40,44 @@ function guid() {
 function ControlMix(tracks) {
 
     this.audioTracks = tracks; 
-
-    // we want to check the valence and arousal of the mix from time to time
-    this.mixValence = 0 ;
-    this.mixArousal = 0 ;
-    this.extractor = new Extractor(1024) ; // extractor.js used in script processor to predict VA
-    this.mixBuffer = new Float32Array(44100*2) ; // 2 second fifo buffer for VA prediction
-    this.checkVA() ; // timed function
-    // update with FIFO(this.mixBuffer, samples)
-
+    
+    // all tracks feed into master with merger
     this.merger = audioCtx.createChannelMerger(this.audioTracks.length) ; // assume stereo for each track
-    this.processor = audioCtx.createScriptProcessor(1024, 1, 1) ;
 
-    this.merger.connect(this.processor) ;
-    this.merger.connect(audioCtx.destination) ;
+    // master audio track and GUI
+    this.master = new AudioTrack(this.merger) ;
+    this.master.output.connect(audioCtx.destination) ;
 
-    //
-    // audio processor function
-    //
-    this.processor.onaudioprocess = function(audioProcessingEvent) {
-        var inputBuffer = audioProcessingEvent.inputBuffer;
-        var samples = inputBuffer.getChannelData(0);
-        // get the average, bincount is fftsize / 2
-        FIFO(this.mixBuffer, samples)
-        // let array =  new Uint8Array(this.analyser.frequencyBinCount);
-        // this.analyser.getByteFrequencyData(array);
-        //let average = getAverageVolume(array)
-    }.bind(this)
+    // let masterMeter = new Meter(this.master) ;
+    // let channel = document.createElement('div') ;
+    // channel.className = "master_channel" ;
+    // channel.appendChild(masterMeter.dot_canvas) ;
+    // channel.appendChild(masterMeter.osc_canvas) ;
+    // document.body.appendChild(channel) ;
 
-    //
     //
     // add a web audio track to each track
-    let channelCount = 0 ;
-    this.audioTracks.forEach(function(track){
-      track.audioTrack = new AudioTrack() ;
-      createSliders(track.audioTrack) ;
+    // add tracks to GUI
+    for (var i = 0; i < this.audioTracks.length; i++) {
+      let track = this.audioTracks[i] ;
 
-      track.audioTrack.output.connect(this.merger,0, channelCount) ;
-      channelCount+=1 ;
-    }.bind(this)) ;
+      // new audio track with input
+      track.audioTrack = new AudioTrack(audioCtx.createBufferSource()) ;
+      // specify output to merger node
+      track.audioTrack.output.connect(this.merger,0, i) ;
+
+      // new meter for the track
+      let meter = new Meter(track.audioTrack) ;
+      let mixer = createSliders(track.audioTrack) ;
+      let channel = document.createElement('div') ;
+      channel.className = "channel" ;
+      channel.appendChild(mixer) ;
+      channel.appendChild(meter.dot_canvas) ;
+      channel.appendChild(meter.osc_canvas) ;
+      document.body.appendChild(channel) ;
+
+    }
+
 
     //
     // generate the sliders for eqs
@@ -85,7 +94,7 @@ function ControlMix(tracks) {
         let sliderbox = document.createElement('div');
         sliderbox.className = 'sliderbox' ;
 
-        let sliderText = document.createElement('em') ;
+        let sliderText = document.createElement('code') ;
         sliderText.innerHTML = obj.name ;
         sliderText.className = 'slidertext' ;
 
@@ -112,7 +121,7 @@ function ControlMix(tracks) {
         mixer.appendChild(sliderbox) ;
         
       });
-      document.body.appendChild(mixer); 
+      return mixer ; 
     }
 
     // get the scheduler ready

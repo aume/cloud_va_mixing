@@ -23,7 +23,7 @@ WordCloudSearch.prototype.loadWords = function() {
   }
 
   let words = taxonomy[0]['values'].map(function(obj){
-      return {'text':obj[1], 'wordid':obj[0], 'size':32*obj[2]}
+      return {'text':obj[1], 'wordid':obj[0], 'size':75*obj[2]}
   }) ;
 
   //console.log(words);
@@ -34,15 +34,16 @@ WordCloudSearch.prototype.loadWords = function() {
 WordCloudSearch.prototype.makeTaxCloud = function (words) {
     var fill = d3.scale.category20();
 
-    var width = 600;
-    var height = 600;
+    let container = document.getElementById('words_container');
+    var width = 500;
+    var height = width;
 
 
     d3.layout.cloud()
       .size([width, height])
       .words(words)
       .padding(1)
-      .rotate(function() { return (~~(Math.random() * 6) - 3) * 30; })
+      .rotate(function() { return 0; }) //(~~(Math.random() * 6) - 3) * 30
       .font("Impact")
       .fontSize(function(d) { return d.size;})
       .on("end", draw)
@@ -70,7 +71,7 @@ WordCloudSearch.prototype.makeTaxCloud = function (words) {
 
       // document.getElementById('stuff').innerHTML = list ;
 
-      var container = document.getElementById('stuff') ;
+      var container = document.getElementById('words') ;
       if (container.hasChildNodes()) {
           container.removeChild(container.lastChild);
       }
@@ -112,6 +113,7 @@ WordCloudSearch.prototype.makeTaxCloud = function (words) {
           .style("font-size", function(d) { return d.size + "px"; })
           .style("font-family", "Impact")
           .style("opacity", ".7")
+          .style("color", "grey")
           .style("fill", function(d, i) { return fill(i); })
           .attr("text-anchor", "middle")
           .attr("transform", function(d) {

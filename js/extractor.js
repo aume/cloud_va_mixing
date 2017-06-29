@@ -1,6 +1,6 @@
 // Main extrator object to hold data and implement file handling, 
 // audio decoding and feature extration
-Extractor = function(windowSize){
+Extractor = function(windowSize, duration){
     this.windowSize = windowSize ;
     this.windowType = "hamming" ;
     this.numMFCC = 3 ;
@@ -9,6 +9,28 @@ Extractor = function(windowSize){
         'spectralSlope','spectralRolloff', 'spectralFlatness', 
         'spectralSpread', 'spectralSkewness', 'spectralKurtosis',
         'perceptualSpread','perceptualSharpness'];
+
+    let arrayLength = Math.floor((44100*duration)/windowSize) ;
+    this.features = {} ;
+    for (let i = 0; i < this.featureNames.length; i++) {
+        let myArray = new Array(arrayLength) ;
+        myArray.fill(1) ;
+        this.features[this.featureNames[i]] = {'data': myArray, 'average':0, 'std_dev':0} ;
+    }
+
+    // setup the mfcc data collector
+    this.mfccData = new Array(this.numMFCC) ;
+    for (let j = 0; j < this.mfccData.length; j++) {
+      let myArray = new Array(arrayLength) ;
+      myArray.fill(1) ;
+      this.mfccData[j]=myArray;
+    }
+    this.features['mfcc'] = {'data':this.mfccData, 'average':new Array(this.numMFCC),  'std_dev':new Array(this.numMFCC)} ;
+
+    Meyda.bufferSize = this.windowSize ;
+    Meyda.windowingFunction = this.windowType;
+    //Meyda.callback = meydaCallback(Meyda) ;
+    Meyda.melBands = this.numMFCC ;
 };
 
 
@@ -16,63 +38,49 @@ Extractor = function(windowSize){
 //
 // here we extract features
 //
-//
+// buffer length should be same size as windowsize
 Extractor.prototype.extractFeatures = function(buffer) {
     //console.log('begin callback') ;
     let source = buffer;//.getChannelData(0);   
 
-    Meyda.bufferSize = this.windowSize ;
-    Meyda.windowingFunction = this.windowType;
-    //Meyda.callback = meydaCallback(Meyda) ;
-    Meyda.melBands = this.numMFCC ;
-
-    let features = {} ;
-    for (let i = 0; i < this.featureNames.length; i++) {
-        features[this.featureNames[i]] = {data: new Array(), average:0, std_dev:0} ;
-    }
-
-    this.mfccData = new Array(this.numMFCC) ;
-    for (let j = 0; j < this.mfccData.length; j++) this.mfccData[j]=new Array();
-    features['mfcc'] = {data:this.mfccData, average:new Array(this.numMFCC),  std_dev:new Array(this.numMFCC)} ;
-
-
     // go across the audio samples and decompose into audio features
     //
-    let dump ;
-    let collector =[];
 
-
-    for (let i = 0; i < buffer.length-this.windowSize; i+=this.windowSize/2) {
-
-        dump = Meyda.extract(this.featureNames, source.slice(i,i+this.windowSize)) ;
-        collector.push(dump) ;
+        let dump = Meyda.extract(this.featureNames, source) ;
+        //collector.push(dump) ;
         for (let j = 0; j < this.featureNames.length; j++) {
 
             let name = this.featureNames[j] ;
-            let feature = features[name] ;
+            let feature = this.features[name] ;
             if(name == 'loudness') {
-
+                feature.data.shift() ;
                 feature.data.push(dump[name]['total']) ;
 
             } else if(name ==='mfcc') {
                 //console.log(dump[name]) ;
                 for (let k = 0; k < feature.data.length; k++) {
-                    
+                    feature.data[k].shift() ;
                     feature.data[k].push(dump[name][k]) ;
                 }
             } else {
-
+                feature.data.shift() ;
                 feature.data.push(dump[name]) ;
             }
         }
-    }
+    //}
 
-    this.featureStatistics(features, this.featureNames)
-    return features ;
+
 
 } // end extractFeatrues
 
 
+Extractor.prototype.getValenceArousal = function(first_argument) {
+  let statistics = this.featureStatistics(this.features, this.featureNames) ;
+  let v = this.valence(this.features) ;
+  let a = this.arousal(this.features) ;
+
+  return {'valence':v, 'arousal':a}
+};
 //
 //
 // calculate the audio feature statistics
@@ -92,7 +100,7 @@ Extractor.prototype.featureStatistics = function (features, featureNames) {
             features[name +' average'] = math.mean(feature.data) ;
             features[name +' std_dev'] = math.std(feature.data);//average(feature.average, feature.data) ;
         }
-        delete features[name] ;
+        //delete features[name] ;
     }  
 } 
 

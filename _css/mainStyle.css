@@ -39,7 +39,7 @@ a:hover { /* this group of selectors will give a keyboard navigator the same hov
 
 /* ~~ this fixed width container surrounds the other divs ~~ */
 .container {
-	max-width: 960px;
+	width: 90%;
 	background-color: #FFF;
 	margin: 0 auto; /* the auto value on the sides, coupled with the width, centers the layout */
 }
@@ -67,16 +67,45 @@ hgroup {
     margin-right: auto;
 }
 
+
+#nav {
+ background-color:#262626;
+ width:100%;
+ height:50px;
+ box-shadow: 0px 1px 50px #5E5E5E;
+ position:fixed;
+ top:0px;
+}
+
 /* ~~ This is the layout information. ~~ 
 
 1) Padding is only placed on the top and/or bottom of the div. The elements within this div have padding on their sides. This saves you from any "box model math". Keep in mind, if you add any side padding or border to the div itself, it will be added to the width you define to create the *total* width. You may also choose to remove the padding on the element in the div and place a second div within it with no width and the padding necessary for your design.
 
 */
 
+.channel {
+ display: inline-block ;
+ height: 200px ;
+ background-color: #1b2631  ;
+ width: 40% ;
+ margin: 1em;
+ padding: 1em;
+}
+
+.vameter {
+	height: 150px ;
+	width: 150px ;
+	background-color: #fff  ;
+}
+
 .sliderbox{
 	float: left ;
-	padding: 5px;
 	margin: 2px ;
+	padding: 2px ;
+	color: white;
+	border-style: solid;
+	border-width: 1px ;
+	border-color:  #283747 ;
 }
 
 .sliderText{
@@ -87,6 +116,13 @@ hgroup {
 	display: block ;
 }
 
+
+/*
+/
+//
+//
+/
+*/
 .content {
 
 	padding: 10px 0;

@@ -1,7 +1,7 @@
 
 "use strict";
 
-function AumeMix(){
+function RoughMix(){
     // a blank segment for silence
     //let blankSegment = this.newSegment(['bftype', 'filename', 10, 1, 1, 1])
 
@@ -11,12 +11,12 @@ function AumeMix(){
 }
 
 
-// AumeMix.prototype.convertVA 
+// RoughMix.prototype.convertVA 
 // helper function to map from [time value]
 // to control points with time 0-1
 // @param: Array of [[time, value], [time, value], [time, value]]
 // @ returns array of ControlPoints
-AumeMix.prototype.convertVA = function(data, duration) {
+RoughMix.prototype.convertVA = function(data, duration) {
 
     let value = data.map(function(obj){
         return this.newControlPoint(obj[0]/duration, obj[1])
@@ -26,12 +26,12 @@ AumeMix.prototype.convertVA = function(data, duration) {
 }
 
 
-// AumeMix.prototype.getSegmentsFromTracks
+// RoughMix.prototype.getSegmentsFromTracks
 // Helper function for file segment loading to generate a 
 // dictionary of unique filename and segements 
-// @param: the list of tracks returned from AumeMix.prototype.generateMix
+// @param: the list of tracks returned from RoughMix.prototype.generateMix
 // @returns: {"filename":{'url':url, 'data':{'id':Segment, 'id':Segment}}}...
-AumeMix.prototype.getSegmentsFromTracks = function(tracks) {
+RoughMix.prototype.getSegmentsFromTracks = function(tracks) {
     let results = {}
     tracks.forEach(function(track){
         track.clips.forEach(function(clip){
@@ -50,7 +50,7 @@ AumeMix.prototype.getSegmentsFromTracks = function(tracks) {
 
 
 /*
-    AumeMix.prototype.getRenderMix
+    RoughMix.prototype.getRenderMix
     Args: 
     words - Dictionary of [{'word':word, 'files':[43,23,876]}]
     duration - Integer duration in seconds
@@ -60,7 +60,7 @@ AumeMix.prototype.getSegmentsFromTracks = function(tracks) {
 
         
         
-AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv){
+RoughMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv){
     let valence = this.convertVA(valenceEnv, duration);
 
     let arousal = this.convertVA(arousalEnv, duration);
@@ -155,7 +155,7 @@ AumeMix.prototype.generateMix = function(words, duration, valenceEnv, arousalEnv
     return tracks
 }
 
-AumeMix.prototype.decisionPoint = function(tracks, valence, arousal, time){
+RoughMix.prototype.decisionPoint = function(tracks, valence, arousal, time){
 
     tracks.forEach(function(track){
         let bestSegment = track.possibleSegments[0];
@@ -172,7 +172,7 @@ AumeMix.prototype.decisionPoint = function(tracks, valence, arousal, time){
     }.bind(this)) ;
 }
       
-AumeMix.prototype.getEnvelopeValue = function(envelope, time){
+RoughMix.prototype.getEnvelopeValue = function(envelope, time){
     // Calculates the current value of the envelope
     // Args: array of control points, time
     // Returns: Float value
@@ -201,7 +201,7 @@ AumeMix.prototype.getEnvelopeValue = function(envelope, time){
 
 
 
-AumeMix.prototype.nextDecisionPoint = function(tracks, interval){
+RoughMix.prototype.nextDecisionPoint = function(tracks, interval){
     //Given the tracks and timed decision interval, work out which is sooner"""
     let times = tracks.map(function(track){
         let clip = track.clips.slice(-1)[0] ;
@@ -213,12 +213,12 @@ AumeMix.prototype.nextDecisionPoint = function(tracks, interval){
     return value
 }
         
-AumeMix.prototype.computeDistance = function(v1,v2, a1,a2){
+RoughMix.prototype.computeDistance = function(v1,v2, a1,a2){
       return Math.sqrt(Math.pow(v2-v1,2)+Math.pow(a2-a1,2)) ;
   }
     
     
-AumeMix.prototype.needsClip = function(track, time) {
+RoughMix.prototype.needsClip = function(track, time) {
     // Function to check if a track has a clip at a specified time
     // Args: a Track, time in seconds
     // Returns: Boolean
@@ -232,7 +232,7 @@ AumeMix.prototype.needsClip = function(track, time) {
         
     
 
-AumeMix.prototype.Track = function() { 
+RoughMix.prototype.Track = function() { 
     /*
     a dictionary/struct with key value pairs
     concept     string  concept this track represents
@@ -253,7 +253,7 @@ AumeMix.prototype.Track = function() {
 }
     
     
-AumeMix.prototype.ControlPoint = function() {
+RoughMix.prototype.ControlPoint = function() {
     /*
     a dictionary/struct with key value pairs
     time        float   In seconds
@@ -263,7 +263,7 @@ AumeMix.prototype.ControlPoint = function() {
     this.val = 0.0 ;
 }
 
-AumeMix.prototype.Clip = function(){
+RoughMix.prototype.Clip = function(){
     /*
     offset      float   Start time of clip on track in seconds
     segment     Segment The clip Segment
@@ -272,7 +272,7 @@ AumeMix.prototype.Clip = function(){
     this.segment = null ;
 }
 
-AumeMix.prototype.Segment = function() {
+RoughMix.prototype.Segment = function() {
     /*
     filename    string  Path of the sound file
     start       float   Start of the segment in seconds
@@ -294,7 +294,7 @@ AumeMix.prototype.Segment = function() {
     this.hasPlayed = 0 ; // no repeats
 }    
         
-AumeMix.prototype.newTrack = function(word, bftype, segments){
+RoughMix.prototype.newTrack = function(word, bftype, segments){
     //Helper function to create and return a new Track
     let track = new this.Track() ;
     track.possibleSegments = segments.map(function(obj){
@@ -311,7 +311,7 @@ AumeMix.prototype.newTrack = function(word, bftype, segments){
     
 
         
-AumeMix.prototype.newClip = function(offset, segment){
+RoughMix.prototype.newClip = function(offset, segment){
     //Helper function to create and return a new Clip"""
     let clip = new this.Clip()
     clip.offset = offset
@@ -319,7 +319,7 @@ AumeMix.prototype.newClip = function(offset, segment){
     return clip
 }
 
-AumeMix.prototype.newSegment = function(seg){
+RoughMix.prototype.newSegment = function(seg){
     //Helper function to create and return a new Segment
     // Args: [bftype, filename, start, duration, valance, arousal]
     let segment = new this.Segment()
@@ -336,7 +336,7 @@ AumeMix.prototype.newSegment = function(seg){
     return segment
 }
 
-AumeMix.prototype.newControlPoint = function(time, val){
+RoughMix.prototype.newControlPoint = function(time, val){
     //Helper function to create and return a new ControlPoint"""
     let cp = new this.ControlPoint()
     cp.time = time
