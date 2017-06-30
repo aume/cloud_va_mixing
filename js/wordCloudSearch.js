@@ -34,7 +34,7 @@ WordCloudSearch.prototype.loadWords = function() {
 WordCloudSearch.prototype.makeTaxCloud = function (words) {
     var fill = d3.scale.category20();
 
-    let container = document.getElementById('words_container');
+    let container = document.getElementById('cloud');
     var width = 500;
     var height = width;
 

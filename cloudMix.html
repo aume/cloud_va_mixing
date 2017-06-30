@@ -11,52 +11,7 @@
 
 
 	<style type="text/css">
-	body{
-		background-color: 'white' ;
-	}
-        text:hover { 
-            opacity: 1 ; 
-            transition: font 0.1s ease;
-        }
-        
 
-        #words_container{
-            float: left;
-            display: block;
-            width: 100%;
-            border: solid;
-            background-color: white;
-        }
-
-        #cloud {
-        	float: left;
-        	display: inline-block;
-            width: 50%;
-            border-bottom: solid;
-        }
-        #words{
-            float: right;
-            width: 50%;
-        }
-        #words li {
-            display: block;
-            width: 25%;
-            float: left;
-            font-family: sans-serif;
-        }
-        #words li:hover {
-            color: pink ;
-        }
-
-        #category{
-            min-height: 2em;
-            border-bottom: dashed;
-            border-right: dashed;
-        }
-        #query {
-            min-height: 2em;
-            border-bottom: solid;
-        }
         
     </style>
 
@@ -66,44 +21,56 @@
 
 <!--Mixer Container-->
 
-    <nav id="nav"></nav>
+    <nav id="nav">
+        <ul>
+            <li><a onclick="switchGUI(0)">About</a></li>
+            <li><a onclick="switchGUI(1)">VA graph</a></li>
+            <li><a onclick="switchGUI(2)">Cloud search</a></li>
+            <li><a onclick="switchGUI(3)">Tracker</a></li>
+            <li><a href="audiometaphor.ca"><img src="img/AuMeLogo.png" style=" height:2em; float:right; background-color: white;"/></a></li>
+        </ul>
+    </nav>
 	<div class="container">
-        <img src="img/AuMeLogo.png" style="display: block; width: 80%;"/>
+        <div id="logo" style="display: none;">
+            <img src="img/AuMeLogo.png" style="display: block; width: 80%;"/>
+            <h2>about:</h2>
+            Audio Metaphor is an interactive system that presents itself as a search engine in which the audience is invited to enter an expression or a sentence that will serve as a request to an automatic soundscape generation system. Enter "The waterfalls inundate the city" or "The marshmallows explode in the campfire" and it will sound like it in quadraphonic! This interactive audio installation is questioning the ubiquity of information, be it real or fake, actual or synthetic. Using state of the art algorithms for sound retrieval, segmentation, background and foreground classification, automatic mixing and automatic soundscape affect recognition. Audio Metaphor is a powerful system that generates believable soundscape at interactive rate. The piece points at issues around big data, artificial intelligence, machine learning and other technoscientific advances, and their impact on our perception and experience of the world. 
+        </div>
 
-	    <div id="controls">
-	        <!-- <img src="img/information-icon.png" title="hint text" class="topRight" /> -->
-	        <!--input type="text" id="concept" class="half" placeholder="Enter the concept" title="placeholder hint text"-->
+	    
 
-	        <span class="half">Duration: <input type="range" id="timescale" value="60" min="20" max="120"/> <label
-	                for="timescale" id="timescaleLabel">Current value: </label></span>
-	    </div>
-
-	    <div class="graphContainer clearfix" id="lineEditorContainer">
+	    <div id="lineEditorContainer" class="graphContainer clearfix"  style="display: none;">
+        <span class="half">Duration: 
+            <input type="range" id="timescale" value="60" min="20" max="120"/> 
+            <label for="timescale" id="timescaleLabel">Current value: </label>
+        </span>
 	        <!-- <img src="img/information-icon.png" title="Click anywhere on the graph to add a point to the currently selected line. Click on any point and press
 	            Delete to remove it (Except first and last points)" class="topRight" /> -->
 	        <div id="graph"></div>
 	    </div>
 
-	    <div>
-		    <input type="button" value="Get Mix" onclick="makeTracks()">
-			<input type="button" value="Make Mix" onclick="getItgoing()">
-			<input type="button" value="Start Audio" onclick="controlmix.start()">
-			<input type="button" value="Stop Audio" onclick="controlmix.start()">
-		</div>
-		<div id="words_container" class="clearfix">
-            <img src="img/loading.gif" style="display: block;" id="wordsLoadingSpinner"/>
+	    
 
-		    <div id="query"></div>
+		<div id="words_container" style="display: none;">
+		    <div><u> query:</u></div>
+            <div id="query"></div>
+            <div><u>category:</u></div>
 		    <div id="category"></div>
 		    <div id="words"></div>
 		    <div id="cloud"></div>
 		</div>
 
 	    <div class="graphContainer" id="trackDisplayContainer" style="display:none;">
-            <img src="img/loading.gif" style="display: none;" id="tracksLoadingSpinner"/>
 
+            <img src="img/loading.gif" style="display: none;" id="tracksLoadingSpinner"/>
 	        <!-- <img src="img/information-icon.png" title="hint text" class="topRight" /> -->
+            <div id='buttons' style="float: right;">
+                <input type="button" value="Start Audio" onclick="controlmix.start()">
+                <input type="button" value="Stop Audio" onclick="controlmix.start()">
+            </div>
 	        <div id="trackGraph"></div>
+            
+
 	    </div>
 
 
@@ -136,7 +103,7 @@
 <script src='./js/wordCloudSearch.js'></script>
 
 <script src="./js/roughmix.js"></script>
-<script src="./js/audioSegmentLoader.js"></script>>
+<script src="./js/audioSegmentLoader.js"></script>
 <script src="./js/web-audio-scheduler.js"></script>
 
 
@@ -146,6 +113,61 @@
 <script src="./js/extractor.js"></script>
 <script src="./js/meter.js"></script>
 
+
+<script type="text/javascript">
+
+    function hide(elementName) {
+        var x = document.getElementById(elementName);
+        if (x.style.display !='none') {
+            x.style.display = 'none';
+        } 
+    } 
+    function unhide(elementName) {
+        var x = document.getElementById(elementName);
+        if (x.style.display === 'none') {
+            x.style.display = 'block';
+        } 
+    } 
+
+    var hideList = ['logo','lineEditorContainer','words_container','trackDisplayContainer'] ;
+    window.onload = switchGUI(0) ;
+    function switchGUI(item) {
+        switch(item) {
+            case 0:
+                for (var i = 0; i < hideList.length; i++) {
+                    hide(hideList[i])
+                }
+                unhide('logo');
+            break ;
+
+            case 1:
+                for (var i = 0; i < hideList.length; i++) {
+                    hide(hideList[i])
+                }
+                unhide('lineEditorContainer');
+            break ;
+
+            case 2:
+                for (var i = 0; i < hideList.length; i++) {
+                    hide(hideList[i])
+                }
+                unhide('words_container');
+            break ;
+
+            case 3:
+                for (var i = 0; i < hideList.length; i++) {
+                    hide(hideList[i])
+                }
+                makeTracks();
+                unhide('trackDisplayContainer');
+            break ;
+
+            default:
+            break;
+        }
+    }
+
+</script>
 <script type="text/javascript">
 	
 var fileLocation = "http://digitalmedia.ok.ubc.ca/Freesound/";//"file:///Volumes/pimpernel/Resources/Freesound/" ;
@@ -162,6 +184,7 @@ var countDownTillLaunch = 0 ; // index for xhr callbacks
 var graph = null;
 var width = null ;
 
+var trackGraph =null;
 
 initdb(initApp) ;
 
@@ -171,7 +194,6 @@ function initApp(argument) {
 	
 	searcher = new WordCloudSearch() ;
 	searcher.loadWords() ;
-    hide('wordsLoadingSpinner') ;
 
 	var width = $("#graph").width();
 	var valence = [[0, 1], [30, 0.4], [60, 1]];
@@ -202,14 +224,7 @@ function initApp(argument) {
 }// end initApp
 
 
-function hide(elementName) {
-    var x = document.getElementById(elementName);
-    if (x.style.display === 'none') {
-        x.style.display = 'block';
-    } else {
-        x.style.display = 'none';
-    }
-} 
+
 //
 //
 // Search and Load section
@@ -236,8 +251,7 @@ function compileSegmentLoads(data) {
 
 function makeTracks() {
 	console.log('making tracks') ;
-	hide('words_container') ;
-    hide('tracksLoadingSpinner') ;
+    unhide('tracksLoadingSpinner') ;
 	var mix = new RoughMix() ;
 	let words = searcher.getFormattedQuery() ;
 	let va = graph.data() ;
@@ -251,24 +265,19 @@ function makeTracks() {
 	console.log('segmentData', segmentData)
 	console.log('countDownTillLaunch', countDownTillLaunch)
 
-	populateTracks(tracks);
 
 	// get all the samples
 	for(let key in segmentData) {
 		let urlLocation = fileLocation+Object.keys(segmentData)[0] ;
 		loadsplit(urlLocation, segmentData[key].data, compileSegmentLoads) ;
 	}
-	
-} // end make tracks
-
-function populateTracks(tracks) {
-	let duration = document.getElementById("timescale").value ;
-	var trackGraph = new TrackDisplay({width: width,timescale:duration});
+    //	
+    trackGraph = TrackDisplay({width: width,timescale:duration});
     trackGraph.tracks(tracks);
     trackGraph.drawGraph("#trackGraph")
     hide('tracksLoadingSpinner') ;
-} // end populateTracks
 
+} // end make tracks
 
 
 </script>

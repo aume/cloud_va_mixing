@@ -42,6 +42,9 @@ a:hover { /* this group of selectors will give a keyboard navigator the same hov
 	width: 90%;
 	background-color: #FFF;
 	margin: 0 auto; /* the auto value on the sides, coupled with the width, centers the layout */
+    margin: 3em;
+
+    padding-top: 1em;
 }
 
 /* ~~ the header is not given a width. It will extend the full width of your layout. It contains an image placeholder that should be replaced with your own linked logo ~~ */
@@ -76,6 +79,84 @@ hgroup {
  position:fixed;
  top:0px;
 }
+
+
+body{
+background-color: 'white' ;
+}
+text:hover { 
+    opacity: 1 ; 
+    transition: font 0.1s ease;
+}
+#logo{
+    float: left;
+    background-color: white;
+    padding: 2em;
+}
+#words_container{
+    float: left;
+    width: 100%;
+    background-color: white;
+
+}
+
+#cloud {
+	float: left;
+	display: inline-block;
+    width: 45%;
+}
+#words{
+    float: right;
+    display: inline-block;
+    width: 45%;
+}
+#words li {
+    display: block;
+    width: 25%;
+    float: left;
+    font-family: sans-serif;
+}
+#words li:hover {
+    color: pink ;
+}
+
+#category{
+    min-height: 2em;
+    border-bottom: dashed;
+}
+#query {
+    min-height: 2em;
+    border-bottom: solid;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+nav li {
+    float: left;
+}
+
+nav li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+nav li a:hover:not(.active) {
+    background-color: #111;
+}
+
+.active {
+    background-color: #4CAF50;
+}
+
 
 /* ~~ This is the layout information. ~~ 
 
@@ -123,115 +204,3 @@ hgroup {
 //
 /
 */
-.content {
-
-	padding: 10px 0;
-}
-
-section {
-	padding: 20px;
-}
-
-
-.examples{
-	
-}.examples #example {
-	margin: 10px 0px 0px 0px;
-	width:100%;
-	display:block ;
-}
-
-.publications {
-}.publications #publication {
-	margin: 10px 0px 0px 0px;
-}
-
-.performance {
-}.performance ul {
-	list-style-type:none;	
-	margin: 10px 0px 0px 0px;
-}.performance li {
-	margin: 5px 0px 0px 0px;
-}
-
-
-.vaexamples{
-		
-}
-.vaexamples #example{
-	margin:0em 0em 3em 0em;
-	text-align:center;
-}
-
-.vaexamples #example #text{
-	width:40%;
-	min-width:200px ;
-	text-align:left;
-	margin:0 auto;
-}
-
-.vaexamples #example img {
-	width:40%;
-	min-width:200px ;
-}
-
-.vaexamples #example hr{
-	width:40%;
-	min-width:200px ;
-}
-.vaexamples #example audio {
-	width:40%;
-	min-width:200px ;
-}
-
-.inputGroup  {
-	margin:0px 0px 0px 10px;
-}.inputGroup #new-search{
-		font-family: 'Source Sans Pro', sans-serif;
-		font-size:18px; 
-		height:30px; 
-		width:50%;	
-}.inputGroup #bfBox {
-	display:inline;
-	height:40px; 
-	padding:3px 10px 7px 0px;
-	margin:0px 0px 0px 15px;
-}.inputGroup #vaBox {
-	display:inline;
-	height:40px; 
-	padding:0px 10px 10px 0px;
-}
-
-
-/* ~~ The footer ~~ */
-.footer {
-	padding: 10px 0;
-	background-color: #FFF;
-	
-}
-.footer #logo {
-	padding-left:10px;
-	padding-right:10px;
-	display:inline-block;
-
-}
-
-/* ~~ miscellaneous float/clear classes ~~ */
-.fltrt {  /* this class can be used to float an element right in your page. The floated element must precede the element it should be next to on the page. */
-	float: right;
-	margin-left: 8px;
-}
-.fltlft { /* this class can be used to float an element left in your page. The floated element must precede the element it should be next to on the page. */
-	float: left;
-	margin-right: 8px;
-}
-.clearfloat { /* this class can be placed on a <br /> or empty div as the final element following the last floated div (within the #container) if the #footer is removed or taken out of the #container */
-	clear:both;
-	height:0;
-	font-size: 1px;
-	line-height: 0px;
-}
-
-#wordlist{
-	width: 200px;
-}
