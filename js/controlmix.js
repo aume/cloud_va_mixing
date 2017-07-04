@@ -48,12 +48,13 @@ function ControlMix(tracks) {
     this.master = new AudioTrack(this.merger) ;
     this.master.output.connect(audioCtx.destination) ;
 
-    // let masterMeter = new Meter(this.master) ;
-    // let channel = document.createElement('div') ;
-    // channel.className = "master_channel" ;
-    // channel.appendChild(masterMeter.dot_canvas) ;
-    // channel.appendChild(masterMeter.osc_canvas) ;
-    // document.body.appendChild(channel) ;
+    let masterMeter = new Meter(this.master) ;
+    let channel = document.createElement('div') ;
+    channel.className = "master_channel" ;
+    channel.appendChild(masterMeter.dot_canvas) ;
+    //channel.appendChild(masterMeter.osc_canvas) ;
+    let container = document.getElementById('trackDisplayContainer') ;
+    container.appendChild(channel) ;
 
     //
     // add a web audio track to each track
@@ -73,8 +74,9 @@ function ControlMix(tracks) {
       channel.className = "channel" ;
       channel.appendChild(mixer) ;
       channel.appendChild(meter.dot_canvas) ;
-      channel.appendChild(meter.osc_canvas) ;
-      document.body.appendChild(channel) ;
+      //channel.appendChild(meter.osc_canvas) ;
+      let container = document.getElementById('trackDisplayContainer') ;
+      container.appendChild(channel) ;
 
     }
 

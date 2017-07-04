@@ -66,7 +66,7 @@
 	        <!-- <img src="img/information-icon.png" title="hint text" class="topRight" /> -->
             <div id='buttons' style="float: right;">
                 <input type="button" value="Start Audio" onclick="controlmix.start()">
-                <input type="button" value="Stop Audio" onclick="controlmix.start()">
+                <input type="button" value="Stop Audio" onclick="controlmix.stop()">
             </div>
 	        <div id="trackGraph"></div>
             
@@ -148,6 +148,7 @@
             break ;
 
             case 2:
+                if(created) location.reload();
                 for (var i = 0; i < hideList.length; i++) {
                     hide(hideList[i])
                 }
@@ -185,6 +186,9 @@ var graph = null;
 var width = null ;
 
 var trackGraph =null;
+
+
+var created = false ;
 
 initdb(initApp) ;
 
@@ -245,15 +249,21 @@ function compileSegmentLoads(data) {
 	countDownTillLaunch -- ;
 	if(!countDownTillLaunch) {
 		console.log('DONE', 'segmentPool', segmentPool, 'tracks', tracks, 'VA', graph.data()) ;//populateTracks(mix) ;
-		//getItgoing()
+		getItgoing()
 	}
 }
 
 function makeTracks() {
+    let words = searcher.getFormattedQuery() ;
+
+    if(created || words.length==0) return ;
+
+    console.log(words) ;
+    created = true ;
 	console.log('making tracks') ;
     unhide('tracksLoadingSpinner') ;
 	var mix = new RoughMix() ;
-	let words = searcher.getFormattedQuery() ;
+	
 	let va = graph.data() ;
 	let duration = document.getElementById("timescale").value ;
 
@@ -275,6 +285,7 @@ function makeTracks() {
     trackGraph = TrackDisplay({width: width,timescale:duration});
     trackGraph.tracks(tracks);
     trackGraph.drawGraph("#trackGraph")
+    console.log('MADE');
     hide('tracksLoadingSpinner') ;
 
 } // end make tracks

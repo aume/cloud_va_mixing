@@ -165,12 +165,12 @@ nav li a:hover:not(.active) {
 */
 
 .channel {
- display: inline-block ;
- height: 200px ;
- background-color: #1b2631  ;
- width: 40% ;
- margin: 1em;
- padding: 1em;
+	display: inline-block ;
+	height: 175px ;
+	background-color: #1b2631  ;
+	width: 350px ;
+	margin: 1em;
+	padding: 1em;
 }
 
 .vameter {
@@ -189,8 +189,10 @@ nav li a:hover:not(.active) {
 	border-color:  #283747 ;
 }
 
-.sliderText{
+.slidertext{
 	display: block ;
+	font-size: 0.5em;
+	font-family: helvetica;
 }
 
 .slider{
